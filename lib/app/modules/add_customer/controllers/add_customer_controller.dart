@@ -117,28 +117,28 @@ class AddCustomerController extends GetxController {
   // Validate form fields
   bool validateFields() {
     if (customerNameController.text.isEmpty) {
-      Get.snackbar('Error', 'Customer name is required');
+      EasyLoading.showError('Customer name is required');
       return false;
     }
     if (mobileNumber.text.isEmpty) {
-      Get.snackbar('Error', 'Mobile number is required');
+      EasyLoading.showError('Mobile number is required');
       return false;
     }
     if (!GetUtils.isPhoneNumber(mobileNumber.text)) {
-      Get.snackbar('Error', 'Invalid mobile number');
+      EasyLoading.showError('Invalid mobile number');
       return false;
     }
-    if (emailController.text.isNotEmpty &&
-        !GetUtils.isEmail(emailController.text)) {
-      Get.snackbar('Error', 'Invalid email address');
+    if (emailController.text.isNotEmpty && !GetUtils.isEmail(emailController.text)) {
+      EasyLoading.showError('Invalid email address');
       return false;
     }
     if (selectedDate.value == null) {
-      Get.snackbar('Error', 'Please select a follow-up date');
+      EasyLoading.showError('Please select a follow-up date');
       return false;
     }
     return true;
   }
+
 
   // Save customer data
   Future<void> saveCustomer() async {
@@ -197,4 +197,6 @@ class AddCustomerController extends GetxController {
     selectedSources.value = 'JustDial';
     selectedDate.value = null;
   }
+
+  void updateSelectedService(String newValue) {}
 }

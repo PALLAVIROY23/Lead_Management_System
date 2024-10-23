@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:lms/app/modules/home/model/dashboard_model.dart';
 
 import '../../../../customWidgets/CustomTextField.dart';
 import '../../../../customWidgets/color_extension.dart';
+import '../../customerListScreen/views/customer_list_screen_view.dart';
 import '../controllers/view_screen_controller.dart';
 
 class ViewScreenView extends GetView<ViewScreenController> {
   const ViewScreenView({super.key});
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,) {
+    GetStorage box = GetStorage();
+    DashBoardModel? dashboardData;
+    var index = Get.arguments['index'];
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -48,9 +55,7 @@ class ViewScreenView extends GetView<ViewScreenController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-        Container(
-
-        child: Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildTextRow("Name", controller.args["name"]),
@@ -74,7 +79,6 @@ class ViewScreenView extends GetView<ViewScreenController> {
             buildTextRow("Testing", controller.args["services"]),
           ],
         ),
-      ),
                 SizedBox(height: 20.h,),
                 CustomTextField(
                   HintText: "Write Comment",
@@ -105,7 +109,7 @@ class ViewScreenView extends GetView<ViewScreenController> {
                       value: controller.selectedStatus.value,
                       isExpanded: true,
                       icon: const Icon(Icons.arrow_drop_down_sharp),
-                      onChanged: (dynamic? newValue) {
+                      onChanged: (dynamic newValue) {
                         if (newValue != null) {
                           controller.updateSelectedStatus(newValue);
                         }
@@ -153,14 +157,16 @@ class ViewScreenView extends GetView<ViewScreenController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     myButton(
-                        onTap: () {
-                          controller.validateInputs();
+                        onTap: () async {
+
+                        controller.validateInputs();
                         },
                         height: 80.h,
                         width: 150.w,
                         text: "Submit Details",
                         Color: HexColor.fromHex("#1D4288"),
-                        textcolor: Colors.white),
+                        textcolor: Colors.white
+                    ),
                     myButton(
                         onTap: () {Get.back();},
                         height: 80.h,
@@ -200,7 +206,7 @@ Widget myButton({
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           text == null
-              ? SizedBox()
+              ? const SizedBox()
               : Text(
             text,
             style: TextStyle(

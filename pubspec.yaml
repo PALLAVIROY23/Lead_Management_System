@@ -46,7 +46,8 @@ dependencies:
   intl_utils: ^2.8.7
   path_provider: ^2.1.4
   sqflite: ^2.4.0
-
+  record: ^5.1.2
+  fuzzy: ^0.5.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -12,16 +12,18 @@ import '../model/dashboard_model.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+        appBar: AppBar(
           title: Text(
             "Lead Management System",
             style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.white),
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
           toolbarHeight: 80.h,
           flexibleSpace: Container(
@@ -40,15 +42,17 @@ class HomeView extends GetView<HomeController> {
               ),
             ).paddingOnly(right: 10, bottom: 10),
           ],
-          backgroundColor: HexColor.fromHex("#FFFFFF")),
+          backgroundColor: HexColor.fromHex("#FFFFFF"),
+        ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.transparent,
         height: 110.h,
         child: Container(
           height: 130.h,
           decoration: BoxDecoration(
-              color: HexColor.fromHex("#1D4288"),
-              borderRadius: BorderRadius.circular(15)),
+            color: HexColor.fromHex("#1D4288"),
+            borderRadius: BorderRadius.circular(15),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -65,7 +69,7 @@ class HomeView extends GetView<HomeController> {
                 label: 'New',
                 textColor: Colors.white,
                 onPressed: () {
-                 // Get.toNamed(Routes.NEWS);
+                  // Get.toNamed(Routes.NEWS);
                 },
               ),
               CustomIconTextButton(
@@ -85,67 +89,58 @@ class HomeView extends GetView<HomeController> {
             ],
           ),
         ),
-      ),
-      backgroundColor: HexColor.fromHex("#FFFFFF"),
-      drawer: const NavBar(),
-      body: SafeArea(
-        child: Obx(() {
-          if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator()); // Show loading indicator
-          }
+      ),// Your BottomAppBar code
+        backgroundColor: HexColor.fromHex("#FFFFFF"),
+    drawer: NavBar(),
+    body: SafeArea(
+    child: RefreshIndicator(
+    onRefresh: () async {
+    String uid = "uid"; // Replace with actual UID retrieval
+    await controller.refreshDashboardData(uid);
+    },
+    child: Obx(() {
+    if (controller.isLoading.value) {
+    return const Center(child: CircularProgressIndicator());
+    }
 
-          final dashboardData = controller.dashboardData.value;
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return Stack(
-                children: [
-                  SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: remainBody(dashboardData).paddingSymmetric(vertical: 20),
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        }),
-      ),
+    final dashboardData = controller.dashboardData.value;
+    return remainBody(dashboardData);
+    }),
+    ),
+    ),
     );
   }
 }
 
+
+
+
 Widget remainBody(DashBoardModel? dashboardData) {
   final HomeController controller = Get.find<HomeController>();
   GetStorage box = GetStorage();
+
   return GridView.builder(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-      maxCrossAxisExtent: 100,
-      mainAxisExtent: 70,
+      maxCrossAxisExtent: 130,
+      mainAxisExtent: 80,
       crossAxisSpacing: 0,
       mainAxisSpacing: 12,
     ),
     itemCount: dashboardData?.lead?.length ?? 0,
     itemBuilder: (BuildContext ctx, index) {
       var lead = dashboardData?.lead?[index];
-
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 0.h),
         child: InkWell(
           onTap: () async {
-
-            String? selectedStatus =  lead?.status;
+            String? selectedStatus = lead?.status;
             String uid = box.read('userDetail')['uid'];
             print(" uid value >>${uid}");
             print(" selectedStatus value >>${selectedStatus}");
             box.write('selectedStatus', selectedStatus);
-            List<dynamic> data = await controller.customerListByStatus(uid, selectedStatus?? " ");
+            List<dynamic> data = await controller.customerListByStatus(uid, selectedStatus ?? " ");
             print('Fetched Data for $selectedStatus: $data');
-            Get.to(() => const CustomerListScreenView(), arguments: {
+            Get.to(() => CustomerListScreenView(), arguments: {
               'uid': uid,
               'status': selectedStatus,
             });
@@ -171,7 +166,7 @@ Widget remainBody(DashBoardModel? dashboardData) {
                     lead?.count ?? '0',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10.sp,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -180,7 +175,7 @@ Widget remainBody(DashBoardModel? dashboardData) {
                     lead?.status ?? 'Unknown',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 7.sp,
+                      fontSize: 11.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -191,9 +186,8 @@ Widget remainBody(DashBoardModel? dashboardData) {
         ),
       );
     },
-  ).paddingSymmetric(horizontal: 10.w);
+  ).paddingSymmetric(horizontal: 10.w, vertical: 20.h);
 }
-
 
 class CustomIconTextButton extends StatelessWidget {
   final IconData icon;

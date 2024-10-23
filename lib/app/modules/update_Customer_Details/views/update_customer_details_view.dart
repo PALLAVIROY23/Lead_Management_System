@@ -47,94 +47,128 @@ class UpdateCustomerDetailsView extends GetView<UpdateCustomerDetailsController>
         child: Column(
           children: [
             SizedBox(height: 30.h),
-            CustomTextField(
-              HintText: "Enter Customer Name",
-              Radius: 25,
-              width: 380.w,
-              keyboardType: TextInputType.name,
-              obscureText: false,
-              isOutlineInputBorder: false,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
-              controller: controller.customerName, // Added controller
-            ),
+            Obx(() => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomTextField(
+                  HintText: "Enter Customer Name",
+                  Radius: 25,
+                  width: 380.w,
+                  keyboardType: TextInputType.name,
+                  obscureText: false,
+                  isOutlineInputBorder: false,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
+                  controller: controller.customerName,
+                ),
+                SizedBox(height: 2.0.h),
+                Text(
+                  controller.customerNameError.value,
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
+            )),
+            Obx(() => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomTextField(
+                  HintText: "Enter mail ID",
+                  Radius: 15,
+                  width: 380.w,
+                  keyboardType: TextInputType.emailAddress,
+                  obscureText: false,
+                  isOutlineInputBorder: false,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
+                  controller: controller.emailController,
+                ),
+                SizedBox(height: 2.0),
+                Text(
+                  controller.emailError.value,
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
+            )),
+
+
+            Obx(() => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildMobileNumberField(controller.mobileNumber),
+                SizedBox(height: 2.0),
+                Text(
+                  controller.mobileNumberError.value,
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
+            )),
+
+            _buildMobileNumberField(controller.alternateMobileNumber, "Alternate Mobile Number"),
             SizedBox(height: 20.h),
-            CustomTextField(
-              HintText: "Enter mail ID",
-              Radius: 15,
-              width: 380.w,
-              keyboardType: TextInputType.emailAddress,
-              obscureText: false,
-              isOutlineInputBorder: false,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
-              controller: controller.emailController, // Added controller
-            ),
-            SizedBox(height: 20.h),
-            _buildMobileNumberField(controller.mobileNumber),
-            SizedBox(height: 20.h),
-            _buildMobileNumberField(
-                controller.alternateMobileNumber, "Alternate Mobile Number"),
-            SizedBox(height: 20.h),
-            CustomTextField(
-              HintText: "Company Name",
-              Radius: 15,
-              width: 380.w,
-              keyboardType: TextInputType.text,
-              obscureText: false,
-              isOutlineInputBorder: false,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
-              controller: controller.companyName, // Added controller
-            ),
-            SizedBox(height: 20.h),
+            Obx(() => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomTextField(
+                  HintText: "Company Name",
+                  Radius: 15,
+                  width: 380.w,
+                  keyboardType: TextInputType.text,
+                  obscureText: false,
+                  isOutlineInputBorder: false,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
+                  controller: controller.companyName,
+                ),
+                SizedBox(height: 8.0),
+                Text(
+                  controller.companyNameError.value,
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
+            )),
+
             _buildDropdown(
               value: controller.selectedServices,
-              // Pass the observable RxString
               items: controller.items,
               onChanged: controller.updateSelectedItem,
             ),
             SizedBox(height: 20.h),
             _buildDropdown(
-              value: controller.selectedCity, // Pass the observable RxString
+              value: controller.selectedCity,
               items: controller.city,
               onChanged: controller.updateSelectedCity,
             ),
             SizedBox(height: 20.h),
             _buildDropdown(
-              value: controller.selectedSources, // Pass the observable RxString
+              value: controller.selectedSources,
               items: controller.sources,
               onChanged: controller.updateSelectedSource,
             ),
-
             SizedBox(height: 50.h),
             updateButton(
               text: "Update Details",
               onTap: () {
-                // Check if the inputs are valid before proceeding to update customer details
                 if (controller.validateInputs()) {
-                  // If all validations pass, call the method to update customer details
                   controller.updateCustomerDetails();
                 } else {
-                  // Show an error using EasyLoading (already done in validateInputs)
                   EasyLoading.showError("Please fill all required fields");
                 }
               },
               Color: HexColor.fromHex("#1E355F"),
               textcolor: Colors.blueAccent,
             ),
-
           ],
         ).paddingSymmetric(horizontal: 17),
+
       ),
     );
   }

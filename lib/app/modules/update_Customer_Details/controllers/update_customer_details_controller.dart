@@ -98,39 +98,51 @@ class UpdateCustomerDetailsController extends GetxController {
     }
   }
 
+// Variables to hold error messages for each field
+  final RxString customerNameError = ''.obs;
+  final RxString emailError = ''.obs;
+  final RxString mobileNumberError = ''.obs;
+  final RxString companyNameError = ''.obs;
+
+// Function to validate inputs and set error messages
   bool validateInputs() {
-    // Check for each field and show the appropriate error message using EasyLoading
+    bool isValid = true;
+
+    // Reset error messages
+    customerNameError.value = '';
+    emailError.value = '';
+    mobileNumberError.value = '';
+    companyNameError.value = '';
+
+    // Check each field and set the appropriate error message
     if (customerName.text.isEmpty) {
-      EasyLoading.showError("Enter Customer name");
-      return false;
+      customerNameError.value = "Enter Customer name";
+      isValid = false;
     }
 
-    if (emailController.text.isNotEmpty &&
+    if (emailController.text.isEmpty &&
         !GetUtils.isEmail(emailController.text)) {
-      EasyLoading.showError('Invalid email address');
-      return false;
+      emailError.value = 'Invalid email address';
+      isValid = false;
     }
 
     if (mobileNumber.text.isEmpty) {
-      EasyLoading.showError('Mobile number is required');
-      return false;
+      mobileNumberError.value = 'Mobile number is required';
+      isValid = false;
     }
 
     if (companyName.text.isEmpty) {
-      EasyLoading.showError("Enter Company Name");
-      return false;
+      companyNameError.value = "Enter Company Name";
+      isValid = false;
     }
 
-    // If all validations pass
-    return true;
+    return isValid;
   }
 
-// Method to update customer details
+// Function to update customer details
   Future<void> updateCustomerDetails() async {
-    // Check if inputs are valid before making the API call
     if (validateInputs()) {
       try {
-        // Prepare the data to be sent to the API
         final response = await apiController.updateCustomer(
           name: customerName.text,
           email: emailController.text,
@@ -150,17 +162,14 @@ class UpdateCustomerDetailsController extends GetxController {
           service: selectedServices.value,
         );
 
-        // Handle the response
         if (response['success']) {
           EasyLoading.showSuccess("Updated Successfully");
           Get.back();
-          // Optionally clear the text fields after a successful update
           clearTextFields();
         } else {
           EasyLoading.showError(response['message'] ?? "Failed to update customer");
         }
       } catch (e) {
-        // Handle any exceptions that occur during the API call
         EasyLoading.showError("An error occurred: ${e.toString()}");
       }
     }

@@ -61,7 +61,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                 ),
                 outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Email Text Field
               CustomTextField(
@@ -79,7 +79,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                 ),
                 outlineborder: OutlineInputBorder(borderSide: BorderSide.none),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Mobile Number Text Field
               Container(
@@ -114,7 +114,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                   keyboardType: TextInputType.number,
                 ),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Alternate Mobile Number Text Field
               Container(
@@ -149,7 +149,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                   keyboardType: TextInputType.number,
                 ),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Company Name Text Field
               CustomTextField(
@@ -168,7 +168,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                 outlineborder: const OutlineInputBorder(
                     borderSide: BorderSide.none),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Services Dropdown
               Obx(() =>
@@ -197,7 +197,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                       ),
                     ),
                   )),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // City Dropdown
               Obx(() =>
@@ -226,7 +226,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                       ),
                     ),
                   )),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Follow-up Date
               Obx(() => GestureDetector(
@@ -255,7 +255,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                 ),
               )),
 
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Source Dropdown
               Obx(() =>
@@ -284,7 +284,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                       ),
                     ),
                   )),
-              SizedBox(height: 20.h),
+              SizedBox(height: 10.h),
 
               // Status Dropdown
               Obx(() =>
@@ -313,7 +313,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                       ),
                     ),
                   )),
-              SizedBox(height: 30.h),
+              SizedBox(height: 20.h),
 
               // Add Customer Button
               updateButton(
@@ -338,7 +338,7 @@ Widget updateButton(
     onTap: onTap,
     child: Container(
       height: 60.h,
-      width: 350.w,
+      width: 300.w,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: Color,
@@ -351,7 +351,7 @@ Widget updateButton(
               : Text(
             text,
             style: TextStyle(
-                fontSize: 14,
+                fontSize: 24,
                 fontWeight: FontWeight.w500,
                 color: textcolor),
           ),

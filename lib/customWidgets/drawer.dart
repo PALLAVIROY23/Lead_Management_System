@@ -6,23 +6,33 @@ import 'package:get_storage/get_storage.dart';
 import 'package:lms/app/api/api_controller.dart';
 import 'package:lms/app/modules/customerListScreen/extension/customerListExtension.dart';
 import 'package:lms/app/modules/home/extension/dashboard_extension.dart';
+import 'package:lms/app/modules/loginScreen/controllers/login_screen_controller.dart';
+import 'package:lms/app/modules/loginScreen/extension/login_extension.dart';
 import '../app/data/constants.dart';
 import '../app/modules/customerListScreen/model/customerListModel.dart';
 import '../app/modules/customerListScreen/views/customer_list_screen_view.dart';
 import '../app/modules/home/model/dashboard_model.dart';
+import '../app/modules/loginScreen/model/login_model.dart';
 import '../app/routes/app_pages.dart';
 
-class NavBar extends StatelessWidget {
+class NavBar extends StatefulWidget {
   const NavBar({super.key});
 
   @override
+  State<NavBar> createState() => _NavBarState();
+}
+
+class _NavBarState extends State<NavBar> {
+  @override
   Widget build(BuildContext context) {
-    final userController = Get.put(UserController()); // Create UserController instance
+    final userController =
+        Get.put(UserController()); // Create UserController instance
     GetStorage box = GetStorage();
     var lead = userController.dashboardData.value.lead;
 
     return Drawer(
-      backgroundColor: Colors.blue.shade50,
+      shadowColor: Colors.white,
+      backgroundColor: Colors.white,
       child: Column(
         children: [
           Image(
@@ -34,20 +44,13 @@ class NavBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                userController.userFullName.value,  // This should display the full name correctly
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w600),
-              ),
+              Text('${userController.userName.value}',style: TextStyle(color: Colors.black),),
               SizedBox(height: 10.h),
-              Text(
-                userController.userType.value,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w400),
-              ),
+              Text(userController.userType.value),
               SizedBox(height: 10.h),
             ],
           ).paddingOnly(right: 150)),
+
           SizedBox(height: 15.h),
           const Divider(
             indent: 20,
@@ -56,36 +59,40 @@ class NavBar extends StatelessWidget {
           ),
           SizedBox(height: 20.h),
           Obx(() => Column(
-            children: userController.statusList
-                .map((status) => Column(
-              children: [
-                CustomRowItem(
-                  icon: getStatusIcon(status), // Get icon based on status
-                  text: status,
-                  onTap: () async {
-                    // Fetch the UID from storage
-                    String uid = box.read('userDetail')['uid'];
+                children: userController.statusList
+                    .map((status) => Column(
+                          children: [
+                            CustomRowItem(
+                              icon: getStatusIcon(
+                                  status), // Get icon based on status
+                              text: status,
+                              onTap: () async {
+                                // Fetch the UID from storage
+                                String uid = box.read('userDetail')['uid'];
 
+                                String selectedStatus = status;
+                                print("uid value >> ${uid}");
+                                print(
+                                    "selectedStatus value >> $selectedStatus");
 
-                    String selectedStatus = status;
-                    print("uid value >> ${uid}");
-                    print("selectedStatus value >> $selectedStatus");
+                                box.write('selectedStatus', selectedStatus);
+                                List<dynamic> data = await userController
+                                    .customerListByStatus(uid, selectedStatus);
+                                print(
+                                    'Fetched Data for $selectedStatus: $data');
 
-                    box.write('selectedStatus', selectedStatus);
-                    List<dynamic> data = await userController.customerListByStatus(uid, selectedStatus);
-                    print('Fetched Data for $selectedStatus: $data');
-
-                    Get.to(() => const CustomerListScreenView(), arguments: {
-                      'uid': uid,
-                      'status': selectedStatus,
-                    });
-                  },
-                ),
-                SizedBox(height: 20.h), // Add space after each item
-              ],
-            ))
-                .toList(),
-          )),
+                                Get.to(() => CustomerListScreenView(),
+                                    arguments: {
+                                      'uid': uid,
+                                      'status': selectedStatus,
+                                    });
+                              },
+                            ),
+                            SizedBox(height: 20.h), // Add space after each item
+                          ],
+                        ))
+                    .toList(),
+              )),
           CustomRowItem(
             icon: Icons.exit_to_app,
             text: "LogOut",
@@ -143,36 +150,27 @@ class CustomRowItem extends StatelessWidget {
     );
   }
 }
+
 class UserController extends GetxController {
   GetStorage box = GetStorage();
-  var userFullName = "".obs;
-  var uid = " ".obs;
+  var userName = ''.obs; // Observable string for username
+  var userType = ''.obs; // Observable string for user type
+
   var dashboardData = DashBoardModel().obs;
-  var userType = "".obs;
   var statusList = <String>[].obs;
   var isLoading = false.obs;
   var customerStatusList = CustomerStatusListModel().obs;
+  var userData = LoginApi().obs;
 
   final ApiController apiController = ApiController(); // Initialize ApiController
 
   @override
   void onInit() {
     super.onInit();
-    fetchUserData();
-
-
-    String uid = box.read(Constants.userDetails[0]) ?? "Ab";
-    userFullName.value = box.read(Constants.userDetails[1]) ?? "Unknown";
-    userType.value = box.read(Constants.userDetails[2]) ?? "Unknown";
-
-
-
-    // Call login function
-    login(uid, userFullName.value, userType.value);
-    print("ram ram ji: UID=${box.read(Constants.userDetails[1])}}");
-
     fetchStatuses();
+    getDataFromStorage();// Fetch status list from the API
   }
+
 
   void fetchDashboardData(String uid) async {
     try {
@@ -180,52 +178,38 @@ class UserController extends GetxController {
       DashBoardModel data = await apiController.dashBoardApi(uid);
       dashboardData.value = data;
     } finally {
-      isLoading.value = false;
+      isLoading.value = false; // Hide loading indicator
     }
-  }
-
-  // void login(String uid, String userFullName, String userType) {
-  //   // After successful login
-  //   box.write(Constants.userDetails[0], uid);
-  //   box.write(Constants.userDetails[1], userFullName); // Save userFullName
-  //   box.write(Constants.userDetails[2], userType); // Save userType
-  //
-  //   // You might want to call fetchUserData to refresh values
-  //   fetchUserData();
-  // }
-  void login(String uid, String userFullName, String userType) {
-    // After successful login
-    box.write(Constants.userDetails[0], uid);
-    box.write(Constants.userDetails[1], userFullName); // Save userFullName
-    box.write(Constants.userDetails[2], userType); // Save userType
-
-    // You might want to call fetchUserData to refresh values
-    print("print first time after login: UID=${box.read(Constants.userDetails[0])}, Name=${box.read(Constants.userDetails[1])}, Type=${box.read(Constants.userDetails[2])}");
-
-    fetchUserData();
   }
 
   void logout() {
-    box.erase();
+    box.erase(); // Clear stored data
     Constants.userDetails = ["uid", "userFullName", "userType"];
-    Get.offAllNamed(Routes.LOGIN_SCREEN);
+    Get.offAllNamed(Routes.LOGIN_SCREEN); // Navigate to the login screen
+  }
+   getDataFromStorage() {
+    // Retrieve data from storage
+    var storedUserName = box.read(Constants.userDetails[1]);
+    var storedUserType = box.read(Constants.userDetails[2]);
+    print("USERFULLNAME>>>${Constants.userDetails[1]}");
+
+    // Update the observables
+    userName.value = storedUserName ;
+    userType.value = storedUserType ;
+
+    // Call the UI method to update the view (this can be a function you define)
+    updateUI();
   }
 
-  void fetchUserData() {
-    GetStorage box = GetStorage();
-
-    uid.value = box.read(Constants.userDetails[0]) ?? "Unknown";
-    userFullName.value = box.read(Constants.userDetails[1]) ?? "Unknown"; // "userFullName"
-    userType.value = box.read(Constants.userDetails[2]) ?? "Unknown"; // "userType"
-    print("Saved User Details: UID=$uid, Name=$userFullName, Type=$userType");
-
-    if (userFullName.value.isEmpty) {
-      userFullName.value = "Unknown";
-    }
-    if (userType.value.isEmpty) {
-      userType.value = "Unknown";
-    }
+  void updateUI() {
+    // Update the UI or perform any other actions needed
+    // For example, you can call a function to refresh the screen or navigate
+    print('User Name: ${userName.value}');
+    print('User Type: ${userType.value}');
+    // You can add additional UI update logic here
   }
+
+
 
 
 
@@ -233,13 +217,8 @@ class UserController extends GetxController {
   Future<List<dynamic>> customerListByStatus(String uid, String status) async {
     try {
       isLoading.value = true;
-
-
       CustomerStatusListModel data = await apiController.fetchCustomerStatusListApi(uid, status);
-
-
       customerStatusList.value = data;
-
 
       switch (status) {
         case 'Disconnected':
@@ -285,7 +264,6 @@ class UserController extends GetxController {
   }
 }
 
-
 IconData getStatusIcon(String status) {
   switch (status.toLowerCase()) {
     case 'disconnected':
@@ -312,3 +290,5 @@ IconData getStatusIcon(String status) {
       return Icons.circle_outlined; // Default icon for unknown statuses
   }
 }
+// Define the extension on LoginApi
+

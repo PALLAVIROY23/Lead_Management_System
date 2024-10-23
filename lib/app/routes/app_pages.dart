@@ -40,12 +40,12 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.CUSTOMER_LIST_SCREEN,
-      page: () => const CustomerListScreenView(),
+      page: () =>  CustomerListScreenView(),
       binding: CustomerListScreenBinding(),
     ),
     GetPage(
       name: _Paths.VIEW_SCREEN,
-      page: () => const ViewScreenView(),
+      page: () =>  ViewScreenView(),
       binding: ViewScreenBinding(),
     ),
     GetPage(
