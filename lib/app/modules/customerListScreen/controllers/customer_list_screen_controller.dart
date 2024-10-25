@@ -89,15 +89,13 @@ class CustomerListScreenController extends GetxController {
     // ... (existing code)
   }
 
-  // Method to filter customer list based on search query
+
   void filterCustomerList(String query) {
-    searchQuery.value = query; // Update search query
+    searchQuery.value = query;
 
     if (query.isEmpty) {
-      // If the query is empty, show all customers
       filteredCustomerList.value = customerStatusList.value.lead ?? [];
     } else {
-      // Filter customers based on the query
       filteredCustomerList.value = customerStatusList.value.lead?.where((customer) {
         return customer.name?.toLowerCase().contains(query.toLowerCase()) ?? false ||
             customer.mobile!.contains(query);

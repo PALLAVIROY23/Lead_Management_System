@@ -23,7 +23,7 @@ class AddCustomerController extends GetxController {
   // Observable variables for dropdowns and date
   var selectedServices = 'Website'.obs;
   List<String> services = ['Website', 'Android App', 'AMC'];
-  var selectedStatus = "Open".obs;
+  var selectedStatus = Rx<String?>(null);
   var status = <String>[].obs;
   var selectedCity = "Patna".obs;
   List<String> city = ['Patna', 'Samastipur', 'Begusarai'];
@@ -57,7 +57,6 @@ class AddCustomerController extends GetxController {
     }
   }
 
-  // Update selected dropdown values
   void updateSelectedItem(String? newValue) {
     if (newValue != null) {
       selectedServices.value = newValue;
@@ -74,12 +73,9 @@ class AddCustomerController extends GetxController {
     }
   }
   void updateSelectedStatus(String? newValue) {
-    if (newValue != null) {
       selectedStatus.value = newValue;
-    }
   }
   Future<void> selectDate(BuildContext context) async {
-    // Show the date picker
     DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: selectedDate.value ?? DateTime.now(),
@@ -88,14 +84,12 @@ class AddCustomerController extends GetxController {
     );
 
     if (pickedDate != null) {
-      // If a date was selected, show the time picker
       TimeOfDay? pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),
       );
 
       if (pickedTime != null) {
-        // Combine the picked date and time
         final selectedDateTime = DateTime(
           pickedDate.year,
           pickedDate.month,
@@ -104,13 +98,10 @@ class AddCustomerController extends GetxController {
           pickedTime.minute,
         );
 
-        // Update the selectedDate with the combined date and time
         selectedDate.value = selectedDateTime;
       }
     }
   }
-
-// Formatting the date and time for display, with initial text as "Follow Up Date"
   String get formattedDate => selectedDate.value != null
       ? DateFormat('yyyy-MM-dd HH:mm').format(selectedDate.value!)
       : 'Follow Up Date';
@@ -140,7 +131,6 @@ class AddCustomerController extends GetxController {
   }
 
 
-  // Save customer data
   Future<void> saveCustomer() async {
     if (validateFields()) {
       try {
@@ -157,7 +147,7 @@ class AddCustomerController extends GetxController {
           websiteurl: '',
           address: '',
           userassigned: '',
-          status: selectedStatus.value,
+          status: selectedStatus.string,
           followupdate: formattedDate,
           lastupdate: formattedDate,
           comments: '',

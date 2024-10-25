@@ -1,18 +1,14 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lms/app/api/api_controller.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../customWidgets/color_extension.dart';
 import '../../../routes/app_pages.dart';
 import '../../add_customer/controllers/add_customer_controller.dart';
 import '../controllers/customer_list_screen_controller.dart';
-import 'package:record/record.dart';
-import 'package:path/path.dart';
 
 class CustomerListScreenView extends GetView<CustomerListScreenController> {
   CustomerListScreenView({super.key});
@@ -26,7 +22,7 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
       appBar: AppBar(
           leading: IconButton(
               onPressed: () {
-                Get.toNamed(Routes.HOME);
+                Get.back();
               },
               icon: const ImageIcon(
                 AssetImage("assets/images/backArrow.png"),
@@ -163,28 +159,26 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                         SizedBox(
                           height: 15.h,
                         ),
-                        Column(
-                          children: [
-                            buildCustomerRow("Name", customer?.name),
-                            SizedBox(height: 7.h),
-                            buildCustomerRow("Mobile", customer?.mobile),
-                            SizedBox(height: 7.h),
-                            buildCustomerRow("Address", customer?.address),
-                            SizedBox(height: 7.h),
-                            buildCustomerRow("Company", customer?.companyname),
-                            SizedBox(height: 7.h),
-                            buildCustomerRow("Status", customer?.status),
-                            SizedBox(height: 7.h),
-                            buildCustomerRow("Services", customer?.service),
-                            SizedBox(height: 7.h),
-                            buildCustomerRow(
-                                "FollowUpDate", customer?.followupdate),
-                            SizedBox(height: 7.h),
-                          ],
-                        ).paddingSymmetric(
-                          horizontal: 21.w,
-                        ),
-                        // Buttons: Edit, View, Call
+                    Column(
+                      children: [
+                        buildCustomerRow("Name", customer.name),
+                        SizedBox(height: 7.h),
+                        buildCustomerRow("Mobile", customer.mobile),
+                        SizedBox(height: 7.h),
+                        buildCustomerRow("Address", customer.address),
+                        SizedBox(height: 7.h),
+                        buildCustomerRow("Company", customer.companyname),
+                        SizedBox(height: 7.h),
+                        buildCustomerRow("Status", customer.status), // Directly call customer.status
+                        SizedBox(height: 7.h),
+                        buildCustomerRow("Services", customer.service),
+                        SizedBox(height: 7.h),
+                        buildCustomerRow("FollowUpDate", customer.comments),
+                      ],
+                    ).paddingSymmetric(
+                      horizontal: 21.w,),
+
+                    // Buttons: Edit, View, Call
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -195,14 +189,16 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                                 Get.toNamed(
                                   Routes.UPDATE_CUSTOMER_DETAILS,
                                   arguments: {
-                                    'name': customer?.name,
-                                    'mobile': customer?.mobile,
-                                    'address': customer?.email,
-                                    'companyname': customer?.companyname,
-                                    'status': customer?.status,
-                                    'service': customer?.service,
-                                    "alternatemobile":
-                                        customer?.alternatemobile,
+                                    /*'id': customer.id*/
+                                    'name': customer.name,
+                                    'mobile': customer.mobile,
+                                    'address': customer.email,
+                                    'companyname': customer.companyname,
+                                    'status': customer.status,
+                                    'service': customer.service,
+                                    "alternatemobile": customer.alternatemobile,
+                                    "comments": customer.comments,
+                                    "Lead Id" : customer.id
                                   },
                                 );
                               },
@@ -225,24 +221,22 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                             myButton(
                               text: "View",
                               onTap: () {
-                                if (customer != null) {
-                                  Get.toNamed(
-                                    Routes.VIEW_SCREEN,
-                                    arguments: {
-                                      'name': customer.name,
-                                      'mobile': customer.mobile,
-                                      'address': customer.address,
-                                      'companyname': customer.companyname,
-                                      'status': customer.status,
-                                      'service': customer.service,
-                                      'followupdate': customer.followupdate,
-                                    },
-                                  );
-                                } else {
-                                  Get.snackbar(
-                                      'Error', 'Customer data not available');
-                                }
-                              },
+                                Get.toNamed(
+                                  Routes.VIEW_SCREEN,
+                                  arguments: {
+                                    'name': customer.name,
+                                    'mobile': customer.mobile,
+                                    'address': customer.address,
+                                    'companyname': customer.companyname,
+                                    'status': customer.status,
+                                    'service': customer.service,
+                                    'followupdate': customer.followupdate,
+                                    "lastupdate" : customer.lastupdate,
+                                    "comments" : customer.comments,
+                                    "Lead Id" : customer.id,
+                                  },
+                                );
+                                                            },
                               color: Colors.orangeAccent,
                               textcolor: Colors.white,
                               icon: Icons.remove_red_eye_outlined,
@@ -262,8 +256,8 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                             myButton(
                               text: "Call",
                               onTap: () async {
-                                if (customer?.mobile != null &&
-                                    customer!.mobile!.isNotEmpty) {
+                                if (customer.mobile != null &&
+                                    customer.mobile!.isNotEmpty) {
                                   // Request permissions
                                   var phoneStatus =
                                       await Permission.phone.request();
@@ -297,7 +291,7 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                                   } else {
                                     // Notify the user of permission denial
                                     Get.snackbar('Permission Denied',
-                                        'Phone call or microphone permission denied');
+                                        'Phone call or microphone permission denied',colorText: Colors.red,backgroundColor: Colors.white);
                                   }
                                 } else {
                                   Get.snackbar(

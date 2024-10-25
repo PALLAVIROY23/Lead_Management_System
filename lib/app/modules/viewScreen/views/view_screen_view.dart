@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:lms/app/modules/home/model/dashboard_model.dart';
 
 import '../../../../customWidgets/CustomTextField.dart';
 import '../../../../customWidgets/color_extension.dart';
@@ -12,12 +10,13 @@ import '../../customerListScreen/views/customer_list_screen_view.dart';
 import '../controllers/view_screen_controller.dart';
 
 class ViewScreenView extends GetView<ViewScreenController> {
+
   const ViewScreenView({super.key});
+
   @override
   Widget build(BuildContext context,) {
     GetStorage box = GetStorage();
-    DashBoardModel? dashboardData;
-    var index = Get.arguments['index'];
+    String uid = box.read('userDetail')['uid'];
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -76,7 +75,9 @@ class ViewScreenView extends GetView<ViewScreenController> {
             SizedBox(height: 20.h),
             buildTextRow("Follow up date", controller.args["followupdate"]),
             SizedBox(height: 20.h),
-            buildTextRow("Testing", controller.args["services"]),
+            buildTextRow("old comments", controller.args["comments"]),
+            SizedBox(height: 20.h),
+            buildTextRow("Lead Id", controller.args["id"]),
           ],
         ),
                 SizedBox(height: 20.h,),
@@ -105,18 +106,19 @@ class ViewScreenView extends GetView<ViewScreenController> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: DropdownButton<dynamic>(
+                    child: DropdownButton<String>(
                       value: controller.selectedStatus.value,
                       isExpanded: true,
+                      hint: const Text("Select Status here"), // Display hint when no value is selected
                       icon: const Icon(Icons.arrow_drop_down_sharp),
-                      onChanged: (dynamic newValue) {
+                      onChanged: (String? newValue) {
                         if (newValue != null) {
-                          controller.updateSelectedStatus(newValue);
+                          controller.updateSelectStatus(newValue);
                         }
                       },
                       underline: Container(), // Removing the underline
                       items: controller.status
-                          .map<DropdownMenuItem<String>>((dynamic value) {
+                          .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -158,8 +160,7 @@ class ViewScreenView extends GetView<ViewScreenController> {
                   children: [
                     myButton(
                         onTap: () async {
-
-                        controller.validateInputs();
+                          Get.to(() => CustomerListScreenView());
                         },
                         height: 80.h,
                         width: 150.w,

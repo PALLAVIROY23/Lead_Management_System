@@ -137,13 +137,10 @@ Widget remainBody(DashBoardModel? dashboardData) {
             String uid = box.read('userDetail')['uid'];
             print(" uid value >>${uid}");
             print(" selectedStatus value >>${selectedStatus}");
-            box.write('selectedStatus', selectedStatus);
+            box.write('selectedStatus', lead?.status);
             List<dynamic> data = await controller.customerListByStatus(uid, selectedStatus ?? " ");
             print('Fetched Data for $selectedStatus: $data');
-            Get.to(() => CustomerListScreenView(), arguments: {
-              'uid': uid,
-              'status': selectedStatus,
-            });
+            Get.to(() => CustomerListScreenView());
           },
           child: Container(
             decoration: BoxDecoration(

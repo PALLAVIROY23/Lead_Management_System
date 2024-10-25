@@ -171,33 +171,35 @@ class AddCustomerView extends GetView<AddCustomerController> {
               SizedBox(height: 10.h),
 
               // Services Dropdown
-              Obx(() =>
-                  Container(
-                    width: 380.w,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      borderRadius: BorderRadius.circular(15),
-                      color: Colors.grey.shade200,
+            Obx(() =>
+                Container(
+                  width: 380.w,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white),
+                    borderRadius: BorderRadius.circular(15),
+                    color: Colors.grey.shade200,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: DropdownButton<String>(
+                      value: controller.selectedServices.value.isEmpty ? null : controller.selectedServices.value,
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_drop_down_sharp),
+                      onChanged: controller.updateSelectedItem,
+                      underline: Container(), // Removing the underline
+                      hint: Text("Select status here"), // Hint text to show when no value is selected
+                      items: controller.services.map((value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: DropdownButton<String>(
-                        value: controller.selectedServices.value,
-                        isExpanded: true,
-                        icon: const Icon(Icons.arrow_drop_down_sharp),
-                        onChanged: controller.updateSelectedItem,
-                        underline: Container(),
-                        // Removing the underline
-                        items: controller.services.map((value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  )),
-              SizedBox(height: 10.h),
+                  ),
+                ),
+            ),
+
+            SizedBox(height: 10.h),
 
               // City Dropdown
               Obx(() =>
@@ -287,32 +289,33 @@ class AddCustomerView extends GetView<AddCustomerController> {
               SizedBox(height: 10.h),
 
               // Status Dropdown
-              Obx(() =>
-                  Container(
-                    width: 380.w,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade200),
-                      borderRadius: BorderRadius.circular(15),
-                      color: Colors.grey.shade200,
+            Obx(() =>
+                Container(
+                  width: 380.w,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white),
+                    borderRadius: BorderRadius.circular(15),
+                    color: Colors.grey.shade200,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: DropdownButton<String>(
+                      value: controller.selectedStatus.value,
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_drop_down_sharp),
+                      onChanged: controller.updateSelectedItem,
+                      underline: Container(), // Removing the underline
+                      hint: const Text("Select status here"), // Hint text to show when no value is selected
+                      items: controller.status.map((value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: DropdownButton<String>(
-                        value: controller.selectedStatus.value,
-                        isExpanded: true,
-                        icon: const Icon(Icons.arrow_drop_down_sharp),
-                        onChanged: controller.updateSelectedStatus,
-                        underline: Container(),
-                        // Removing the underline
-                        items: controller.status.map((value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  )),
+                  ),
+                ),
+            ),
               SizedBox(height: 20.h),
 
               // Add Customer Button

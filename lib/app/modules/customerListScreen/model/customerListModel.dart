@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final customerStatusList = customerStatusListFromJson(jsonString);
-
 import 'dart:convert';
 
 CustomerStatusListModel customerStatusListFromJson(String str) => CustomerStatusListModel.fromJson(json.decode(str));
@@ -11,7 +7,6 @@ String customerStatusListToJson(CustomerStatusListModel data) => json.encode(dat
 class CustomerStatusListModel {
   bool? success;
   List<LeadData>? lead;
-
   String? msg;
 
   CustomerStatusListModel({
@@ -43,7 +38,7 @@ class LeadData {
   String? the6;
   String? the7;
   String? the8;
-  String? the9; // Enum field
+  The9? the9; // Using Enum
   String? the10;
   String? the11;
   String? the12;
@@ -60,7 +55,7 @@ class LeadData {
   String? websiteurl;
   String? address;
   String? userassigned;
-  String? status; // Enum field
+  String? status;
   String? followupdate;
   String? lastupdate;
   String? comments;
@@ -116,7 +111,7 @@ class LeadData {
     the6: json["6"],
     the7: json["7"],
     the8: json["8"],
-    the9: json["9"], // Safe null handling
+    the9: json["9"] == null ? null : the9Values.map[json["9"]],
     the10: json["10"],
     the11: json["11"],
     the12: json["12"],
@@ -133,7 +128,7 @@ class LeadData {
     websiteurl: json["websiteurl"],
     address: json["address"],
     userassigned: json["userassigned"],
-    status: json["status"], // Safe null handling
+    status: json["status"],
     followupdate: json["followupdate"],
     lastupdate: json["lastupdate"],
     comments: json["comments"],
@@ -153,7 +148,7 @@ class LeadData {
     "6": the6,
     "7": the7,
     "8": the8,
-    "9": the9, // Safe null handling
+    "9": the9 == null ? null : the9Values.reverse[the9],
     "10": the10,
     "11": the11,
     "12": the12,
@@ -170,7 +165,7 @@ class LeadData {
     "websiteurl": websiteurl,
     "address": address,
     "userassigned": userassigned,
-    "status": status, // Safe null handling
+    "status": status,
     "followupdate": followupdate,
     "lastupdate": lastupdate,
     "comments": comments,
@@ -181,13 +176,12 @@ class LeadData {
   };
 }
 
-
 enum The9 {
-  RINGING
+  RINGING,
 }
 
 final the9Values = EnumValues({
-  "Ringing": The9.RINGING
+  "Ringing": The9.RINGING,
 });
 
 class EnumValues<T> {

@@ -6,8 +6,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:lms/app/api/api_controller.dart';
 import 'package:lms/app/modules/customerListScreen/extension/customerListExtension.dart';
 import 'package:lms/app/modules/home/extension/dashboard_extension.dart';
-import 'package:lms/app/modules/loginScreen/controllers/login_screen_controller.dart';
-import 'package:lms/app/modules/loginScreen/extension/login_extension.dart';
 import '../app/data/constants.dart';
 import '../app/modules/customerListScreen/model/customerListModel.dart';
 import '../app/modules/customerListScreen/views/customer_list_screen_view.dart';
@@ -44,7 +42,7 @@ class _NavBarState extends State<NavBar> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${userController.userName.value}',style: TextStyle(color: Colors.black),),
+              Text(userController.userName.value,),
               SizedBox(height: 10.h),
               Text(userController.userType.value),
               SizedBox(height: 10.h),
@@ -189,16 +187,14 @@ class UserController extends GetxController {
   }
    getDataFromStorage() {
     // Retrieve data from storage
-    var storedUserName = box.read(Constants.userDetails[1]);
-    var storedUserType = box.read(Constants.userDetails[2]);
+    var storedUserName = (Constants.userDetails[1]);
+    var storedUserType = (Constants.userDetails[2]);
     print("USERFULLNAME>>>${Constants.userDetails[1]}");
 
     // Update the observables
     userName.value = storedUserName ;
     userType.value = storedUserType ;
 
-    // Call the UI method to update the view (this can be a function you define)
-    updateUI();
   }
 
   void updateUI() {
@@ -228,7 +224,7 @@ class UserController extends GetxController {
         case 'Office Enquiry':
         case 'Open':
         case 'Ringing':
-        case 'Switch Off':
+        case 'Switch Off.':
         case 'To be Verified':
         case 'Transfer to Senior':
           return data.lead?.map((lead) => lead.status).toList() ?? [];
@@ -272,7 +268,7 @@ IconData getStatusIcon(String status) {
       return Icons.follow_the_signs;
     case 'ringing':
       return Icons.phone_in_talk;
-    case 'switch off':
+    case 'Switch Off.':
       return Icons.power_off;
     case 'not interested':
       return Icons.not_interested;

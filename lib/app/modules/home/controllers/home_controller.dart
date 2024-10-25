@@ -72,30 +72,7 @@ class HomeController extends GetxController {
       customerStatusList.value = data;
 
       // Process the data according to the status
-      switch (status) {
-        case 'Disconnected':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Follow Up':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Hot Lead':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Not Interested':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Office Enquiry':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Open':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Ringing':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Switch Off':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'To be Verified':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        case 'Transfer to Senior':
-          return data.lead?.map((lead) => lead.status).toList() ?? [];
-        default:
-          return ['No Data Available'];
-      }
+      return data.lead?.map((lead) => lead).toList() ?? [];
 
     } catch (e) {
       print("Error occurred while fetching status data: $e");

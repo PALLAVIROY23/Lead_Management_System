@@ -1,4 +1,6 @@
-import 'package:flutter/cupertino.dart';
+
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
@@ -6,6 +8,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:lms/app/modules/customerListScreen/extension/customerListExtension.dart';
 import 'package:lms/app/modules/home/extension/dashboard_extension.dart';
 import 'package:intl/intl.dart';
+import 'package:lms/app/modules/viewScreen/extension/updateExtension.dart';
+import 'package:lms/app/routes/app_pages.dart';
 
 import '../../../api/api_controller.dart';
 import '../../customerListScreen/model/customerListModel.dart';
@@ -17,24 +21,27 @@ class ViewScreenController extends GetxController {
   ApiController apiController;
 
   ViewScreenController({required this.apiController});
-  var selectedStatus = "Open".obs; // Selected status for dropdown
+  var selectedStatus = Rx<String?>(null); // Selected status for dropdown
   var status = <String>[].obs; // Observable list to hold statuses from API
   var args = Get.arguments;
   var comment = ''.obs; // Observable for comment input
   var isLoading = true.obs;
   var customerUpdatedStatusList = CustomerStatusListModel().obs;
   var dashboardData = DashBoardModel().obs;
-  var leads = <Lead>[].obs; // Observable list to store the fetched leads
+  var leads = <Lead>[].obs;
   var selectedDate = Rx<DateTime?>(null);
-
-
-
+  var customerData = <LeadData>[].obs;
+  var selectedStatusList = <dynamic>[].obs;
+  var userId = " ".obs;
+  var leadDetails = {}.obs;
 
   @override
-  void onInit() {
+   onInit() {
     super.onInit();
+
     fetchStatuses();
   }
+
 
   Future<void> fetchStatuses() async {
     try {
@@ -48,15 +55,18 @@ class ViewScreenController extends GetxController {
           }
           leads.add(lead); // Add the lead to the observable list
         }
-        // Show success message if needed
         EasyLoading.showSuccess('Statuses loaded successfully');
       } else {
         EasyLoading.showError(dashboardData.msg ?? 'Failed to load statuses');
       }
     } catch (e) {
       EasyLoading.showError('An error occurred while fetching statuses');
-      print('Error: $e');
+      log('Error: $e');
     }
+  }
+
+  void updateSelectedStatus(String value) {
+    selectedStatus.value = value;
   }
 
   Future<void> selectDate(BuildContext context) async {
@@ -94,98 +104,145 @@ class ViewScreenController extends GetxController {
       ? DateFormat('yyyy-MM-dd HH:mm').format(selectedDate.value!)
       : 'Follow Up Date';
 
-  void updateSelectedStatus(String value) {
+  void updateSelectStatus(String value) {
     selectedStatus.value = value;
   }
-
-  // New method to validate inputs
-   validateInputs() {
-    if (comment.value.isEmpty || selectedStatus.value.isEmpty || selectedDate.value == null) {
-      EasyLoading.showError("Please fill all details"); // Show error message
-      return;
-    }
-    navigateToCustomerDetails();
-  }
-
-  Future<dynamic> navigateToCustomerDetails() async {
+/*  void onSubmitDetails() async {
     try {
-      isLoading.value = true;
-
-      // Retrieve UID and status from local storage
-      String uid = box.read('userDetail')['uid'];
-      String status = selectedStatus.value;
-      String commentValue = comment.value;
-      String selectedDateValue = selectedDate.value?.toString() ?? '';
-
-      // Log the parameters being sent to the API
-      print("Fetching customer status list with UID: $uid, Status: $status");
-
-      // Fetch the customer status list data using the API
-      CustomerStatusListModel data = await apiController.fetchCustomerStatusListApi(uid, status);
-
-      if (!(data.success ?? false)) {
-        print("API call failed: ${data.msg ?? 'No message provided'}");
-        EasyLoading.showError("Failed to fetch customer status list. ${data.msg ?? ''}");
-        return [];
+      // Retrieve the current selected status
+      String? currentStatus = selectedStatus.value;
+      if (currentStatus == null || currentStatus.isEmpty) {
+        EasyLoading.showError("Please select a status first");
+        return;
       }
 
-      // Update the customer status list with the fetched data
-      customerUpdatedStatusList.value = data;
+      // Extract data from the arguments
+      String? leadId = args["id"];
+      String? followUpDate = args["followupdate"];
+      String? lastUpdate = args["lastupdate"];
+      String? oldComments = args["comments"];
+      String? newComments = comment.value; // Get the updated comment from the controller
 
-      // Get the leads for the selected status
-      List<LeadData> newLeads = data.lead?.where((lead) => lead.status == status).toList() ?? [];
-
-      // Log the number of new leads found
-      print("Number of leads found for status $status: ${newLeads.length}");
-
-      // If no leads are found, show a message and prevent navigation
-      if (newLeads.isEmpty) {
-        EasyLoading.showInfo("No leads found for the selected status.");
-        print("Lead data is null or empty");
-        return [];
+      if (leadId == null) {
+        EasyLoading.showError("Lead ID is missing");
+        return;
       }
 
-      // Update the leads list: first remove the current leads for the selected status, then add the new leads
-      leads.removeWhere((lead) => lead.status == status);
-      leads.addAll(newLeads.map((leadData) => Lead(
-        status: leadData.status,
-        // Include any additional fields here
-      )));
+      // Show loading indicator
+      EasyLoading.show(status: "Updating...");
 
-      // Store the selected status and additional details in local storage
-      box.write('selectedStatus', status);
-      box.write('comment', commentValue);
-      box.write('selectedDate', selectedDateValue);
+      // Call the updateDetails API to update the status and other details
+      final response = await apiController.updateDetails(
+        id: leadId,
+        status: currentStatus,
+        followupdate: followUpDate,
+        lastupdate: lastUpdate,
+        oldcomments: oldComments,
+        comments: newComments,
+      );
 
-      // Fetch customer list based on the selected status
-      List<dynamic> fetchedData = await customerListByStatus(uid, status);
-      print('Fetched Data for $status: $fetchedData');
+      // Check the response status
+      if (response.statusCode == 200) {
+        // Update the local customerData list
+        int existingIndex = customerData.indexWhere((lead) => lead.id == leadId);
+        if (existingIndex != -1) {
+          // Update the existing data
+          customerData[existingIndex] = LeadData(
+            id: leadId,
+            name: args["name"],
+            mobile: args["mobile"],
+            city: args["address"],
+            status: currentStatus,
+            service: args["service"],
+            source: args["source"],
+            companyname: args["companyname"],
+            lastupdate: lastUpdate,
+            followupdate: followUpDate,
+            comments: newComments,
+          );
+        }
 
-      // If fetchedData is empty or indicates failure, handle the situation
-      if (fetchedData.isEmpty || fetchedData.toString().contains('No Data Available')) {
-        print("No data available for $status");
-        EasyLoading.showInfo("No data available for $status");
-        return [];
+        // Update the selectedStatusList based on the new status
+        selectedStatusList.clear();
+        selectedStatusList.addAll(
+          customerData.where((lead) => lead.status == currentStatus),
+        );
+
+        // Show a success message
+        EasyLoading.showSuccess("Data has been moved to $currentStatus status");
+        Get.toNamed(Routes.HOME);
+      } else {
+        // Show error if the API response is not successful
+        EasyLoading.showError("Failed to update details: ${response.statusMessage}");
+      }
+    } catch (e) {
+      print("Error while updating details: $e");
+      EasyLoading.showError("Error updating details: $e");
+    }
+  }*/
+
+
+
+  Future<void> onSubmitDetails() async {
+    String uid = box.read('userDetail')['uid'];
+    try {
+      // Retrieve the current selected status
+      String? currentStatus = selectedStatus.value;
+
+      if (currentStatus == null || currentStatus.isEmpty) {
+        EasyLoading.showError("Please select a status first");
+        return;
       }
 
-      // Navigate to the CustomerListScreenView with arguments
+      // Extract data from the arguments and create a new LeadData object
+      LeadData newLeadData = LeadData(
+        name: args["name"],
+        mobile: args["mobile"],
+        city: args["address"],
+        status: currentStatus, // Assign the selected status
+        service: args["service"],
+        source: args["source"],
+        companyname: args["companyname"],
+        lastupdate: args["lastupdate"],
+        followupdate: args["followupdate"],
+        comments: args["12"],
+        id: args["id"],
+      );
+
+      // Check if the new lead is already in the customerData list based on the ID
+      bool isExisting = customerData.any((lead) => lead.id == newLeadData.id);
+
+      if (isExisting) {
+        // Update the existing lead data in the list
+        int index = customerData.indexWhere((lead) => lead.id == newLeadData.id);
+        customerData[index] = newLeadData;
+      } else {
+        // Add the new LeadData to the customerData list
+        customerData.add(newLeadData);
+      }
+
+      // Update the selectedStatusList with only the data that matches the provided ID and current status
+      selectedStatusList.clear();
+      selectedStatusList.addAll(
+        customerData.where((lead) => lead.id == newLeadData.id && lead.status == currentStatus),
+      );
+
+      // Show a success message
+      EasyLoading.showSuccess("Data has been moved to $currentStatus status");
+      Get.toNamed(Routes.CUSTOMER_LIST_SCREEN);
+   /*   print('Fetched Data for $selectedStatus: $uid');
       Get.to(() => CustomerListScreenView(), arguments: {
         'uid': uid,
-        'status': status,
-        'comment': commentValue,
-        'selectedDate': selectedDateValue,
-      });
+        'status': currentStatus,
+      });*/
+
+
 
     } catch (e) {
-      print("Error occurred while fetching status data: $e");
-      EasyLoading.showError("Error fetching data: $e");
-      return ['Error fetching data'];
-    } finally {
-      isLoading.value = false;
+      print("Error while moving data to selected status: $e");
+      EasyLoading.showError("Error moving data: $e");
     }
   }
-
-
 
 
 
@@ -232,28 +289,6 @@ class ViewScreenController extends GetxController {
       isLoading.value = false;
     }
   }
-
-  void removeLeadFromCurrentStatus(String leadId) {
-    try {
-      // Find the index of the lead with the given leadId
-      int index = leads.indexWhere((lead) => lead.status == leadId);
-
-      if (index != -1) {
-        // If the lead is found, remove it from the list
-        leads.removeAt(index);
-        EasyLoading.showSuccess('Lead removed successfully');
-      } else {
-        // If the lead is not found, show an error message
-        EasyLoading.showError('Lead not found');
-      }
-    } catch (e) {
-      // Handle any errors that occur during the removal process
-      print('Error occurred while removing lead: $e');
-      EasyLoading.showError('An error occurred while removing the lead');
-    }
-  }
-
-
 
 
 }
