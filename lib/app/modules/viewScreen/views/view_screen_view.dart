@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -17,6 +19,7 @@ class ViewScreenView extends GetView<ViewScreenController> {
   Widget build(BuildContext context,) {
     GetStorage box = GetStorage();
     String uid = box.read('userDetail')['uid'];
+    print("ID>>>>>>>>>>>>${controller.args['Lead Id']}");
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -77,7 +80,8 @@ class ViewScreenView extends GetView<ViewScreenController> {
             SizedBox(height: 20.h),
             buildTextRow("old comments", controller.args["comments"]),
             SizedBox(height: 20.h),
-            buildTextRow("Lead Id", controller.args["id"]),
+            buildTextRow("Lead Id", controller.args["Lead Id"]),
+
           ],
         ),
                 SizedBox(height: 20.h,),
@@ -159,15 +163,16 @@ class ViewScreenView extends GetView<ViewScreenController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     myButton(
-                        onTap: () async {
-                          Get.to(() => CustomerListScreenView());
-                        },
-                        height: 80.h,
-                        width: 150.w,
-                        text: "Submit Details",
-                        Color: HexColor.fromHex("#1D4288"),
-                        textcolor: Colors.white
+                      onTap: () async {
+                        await controller.onSubmitDetails(); // Call the submission method
+                      },
+                      height: 80.h,
+                      width: 150.w,
+                      text: "Submit Details",
+                      Color: HexColor.fromHex("#1D4288"),
+                      textcolor: Colors.white,
                     ),
+
                     myButton(
                         onTap: () {Get.back();},
                         height: 80.h,

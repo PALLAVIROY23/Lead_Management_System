@@ -6,6 +6,9 @@ import 'package:get/get.dart';
 
 import '../../../../customWidgets/CustomTextField.dart';
 import '../../../../customWidgets/color_extension.dart';
+import '../../customerListScreen/model/citiesModel.dart';
+import '../../customerListScreen/model/serviceModel.dart';
+import '../../customerListScreen/model/sourceModel.dart';
 import '../controllers/update_customer_details_controller.dart';
 
 class UpdateCustomerDetailsView extends GetView<UpdateCustomerDetailsController> {
@@ -136,23 +139,99 @@ class UpdateCustomerDetailsView extends GetView<UpdateCustomerDetailsController>
               ],
             )),
 
-            _buildDropdown(
-              value: controller.selectedServices,
-              items: controller.items,
-              onChanged: controller.updateSelectedItem,
-            ),
+            Obx(() => Container(
+              width: 352.w,
+              height: 50.h,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.grey.shade200,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: DropdownButton<CustomerService>(
+                  value: controller.selectedService.value,
+                  isExpanded: true,
+                  hint: const Text("Customer Services"),
+                  icon: const Icon(Icons.arrow_drop_down_sharp),
+                  onChanged: (CustomerService? newValue) {
+                    if (newValue != null) {
+                      controller.updateSelectedService(newValue);
+                    }
+                  },
+                  underline: Container(),
+                  items: controller.serviceList.map<DropdownMenuItem<CustomerService>>((CustomerService service) {
+                    return DropdownMenuItem<CustomerService>(
+                      value: service,
+                      child: Text(service.name ?? 'Unnamed Service'),
+                    );
+                  }).toList(),
+                ),
+              ),
+            )),
             SizedBox(height: 20.h),
-            _buildDropdown(
-              value: controller.selectedCity,
-              items: controller.city,
-              onChanged: controller.updateSelectedCity,
-            ),
+            Obx(() => Container(
+              width: 352.w,
+              height: 50.h,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.grey.shade200,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: DropdownButton<CitiesData>(
+                  value: controller.selectedCity.value, // Use selectedCity from the controller
+                  isExpanded: true,
+                  hint: const Text("Select city "), // Display hint when no value is selected
+                  icon: const Icon(Icons.arrow_drop_down_sharp),
+                  onChanged: (CitiesData? newValue) {
+                    if (newValue != null) {
+                      controller.updateSelectedCity(newValue);
+                    }
+                  },
+                  underline: Container(), // Removing the underline
+                  items: controller.city.map<DropdownMenuItem<CitiesData>>((CitiesData city) {
+                    return DropdownMenuItem<CitiesData>(
+                      value: city, // Set the correct value
+                      child: Text(city.name ?? ''), // Display the city name, handle null safety
+                    );
+                  }).toList(),
+                ),
+              ),
+            )),
             SizedBox(height: 20.h),
-            _buildDropdown(
-              value: controller.selectedSources,
-              items: controller.sources,
-              onChanged: controller.updateSelectedSource,
-            ),
+            Obx(() => Container(
+              width: 352.w,
+              height: 50.h,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.grey.shade200,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: DropdownButton<SourceList>(
+                  value: controller.selectedSource.value,
+                  isExpanded: true,
+                  hint: const Text("Customer Source"), // Display hint when no value is selected
+                  icon: const Icon(Icons.arrow_drop_down_sharp),
+                  onChanged: (SourceList? newValue) {
+                    if (newValue != null) {
+                      controller.updateSelectedSource(newValue);
+                    }
+                  },
+                  underline: Container(), // Removing the underline
+                  items: controller.sources
+                      .map<DropdownMenuItem<SourceList>>((SourceList source) {
+                    return DropdownMenuItem<SourceList>(
+                      value: source,
+                      child: Text(source.sourcename ?? "Unknown"),
+                    );
+                  }).toList(),
+                ),
+              ),
+            )),
             SizedBox(height: 50.h),
             updateButton(
               text: "Update Details",

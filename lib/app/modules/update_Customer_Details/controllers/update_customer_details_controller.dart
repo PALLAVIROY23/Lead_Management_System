@@ -2,21 +2,24 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:lms/app/api/api_controller.dart';
+import 'package:lms/app/modules/customerListScreen/extension/customerListExtension.dart';
 import 'package:lms/app/modules/update_Customer_Details/extension/update_customer_extension.dart';
+
+import '../../customerListScreen/model/citiesModel.dart';
+import '../../customerListScreen/model/serviceModel.dart';
+import '../../customerListScreen/model/sourceModel.dart';
 
 class UpdateCustomerDetailsController extends GetxController {
   final ApiController apiController;
 
   UpdateCustomerDetailsController({required this.apiController});
 
-  var selectedServices = 'Website'.obs;
-  List<String> items = ['Website', 'Android App', 'AMC'];
-
-  var selectedCity = "Patna".obs;
-  List<String> city = ['Patna', 'Samastipur', 'Begusarai'];
-
-  var selectedSources = "JustDial".obs;
-  List<String> sources = ['JustDial', 'Google', 'website'];
+  var selectedService = Rx<CustomerService?>(null);
+  var serviceList = <CustomerService>[].obs;
+  var selectedCity = Rx<CitiesData?>(null);
+  var city = <CitiesData>[].obs;
+  var selectedSource = Rx<SourceList?>(null);
+  var sources = <SourceList>[].obs;
 
   // TextEditingController for customer details
   TextEditingController customerName = TextEditingController();
@@ -47,10 +50,10 @@ class UpdateCustomerDetailsController extends GetxController {
       mobileNumber.text = arguments['mobile'] ?? '';
       alternateMobileNumber.text = arguments['alternatemobile'] ?? '';
       companyName.text = arguments['companyname'] ?? '';
-
-
-
     }
+    fetchSourceList();
+    fetchServiceList();
+    fetchCitiesList();
 
   }
 
@@ -80,23 +83,7 @@ class UpdateCustomerDetailsController extends GetxController {
 
   void increment() => count.value++;
 
-   updateSelectedItem(String? newValue) {
-    if (newValue != null) {
-      selectedServices.value = newValue;
-    }
-  }
 
-   updateSelectedCity(String? newValue) {
-    if (newValue != null) {
-      selectedCity.value = newValue;
-    }
-  }
-
-   updateSelectedSource(String? newValue) {
-    if (newValue != null) {
-      selectedSources.value = newValue;
-    }
-  }
 
 // Variables to hold error messages for each field
   final RxString customerNameError = ''.obs;
@@ -138,6 +125,72 @@ class UpdateCustomerDetailsController extends GetxController {
 
     return isValid;
   }
+  void updateSelectedService(CustomerService value) {
+    selectedService.value = value;
+  }
+  void updateSelectedCity(CitiesData value) => selectedCity.value = value;
+  void updateSelectedSource(SourceList value) => selectedSource.value = value;
+
+  Future<void> fetchServiceList() async {
+    EasyLoading.show(status: "Loading..."); // Show loading indicator
+    try {
+      var serviceData = await apiController.fetchServiceListApi();
+
+      if (serviceData.success == true) {
+        // Ensure that services are not null before assigning
+        serviceList.value = serviceData.services ?? [];
+        print("PRINT SERVICE LIST>>>>>>> $serviceList");
+      } else {
+        EasyLoading.showError("${serviceData.msg ?? 'Failed to load services'}");
+        print("PRINT ERROR>>>>>>>>>>>>> ${serviceData.msg}");
+      }
+    } catch (e) {
+      // Log the error for debugging purposes
+      print("Error occurred while fetching service list: $e");
+      EasyLoading.showError("An unexpected error occurred: $e");
+    } finally {
+      EasyLoading.dismiss(); // Dismiss loading indicator in both success and error cases
+    }
+  }
+  Future<void>fetchCitiesList()async{
+    EasyLoading.show(status: "Loading....");
+    try{
+      var cityData = await apiController.fetchCitiesListApi();
+      if(cityData.success==true){
+        city.value= cityData.cities ?? [];
+        print("CITIES LIST>>>>>>>${city}");
+      }else {
+        EasyLoading.showError("${cityData.msg ?? "failed to load cities list"}");
+      }
+
+    }catch(e) {
+      print("Error occurred while fetching service list: $e");
+      EasyLoading.showError("An unexpected error occurred: $e");
+    }
+  }
+  Future<void> fetchSourceList() async {
+    EasyLoading.show(status: "Loading....");
+    try {
+      // Fetch data from the API
+      var sourceData = await apiController.fetchSourceListApi();
+
+      // Check if the API call was successful
+      if (sourceData.success == true) {
+        // Update the sources observable with the fetched data
+        sources.value = sourceData.source ?? [];
+        print("SOURCELIST>>>>>>${sourceData.source}");
+
+        // Display a success message if needed
+        EasyLoading.dismiss();
+      } else {
+        // Show error message if the response was not successful
+        EasyLoading.showError(sourceData.msg ?? "Failed to fetch source list");
+      }
+    } catch (e) {
+      // Handle any errors that occur during the API call
+      EasyLoading.showError("An unexpected error occurred: $e");
+    }
+  }
 
 // Function to update customer details
   Future<void> updateCustomerDetails() async {
@@ -152,14 +205,14 @@ class UpdateCustomerDetailsController extends GetxController {
           websiteurl: websiteUrl.text,
           address: address.text,
           userassigned: userAssigned.text,
-          status: selectedServices.value,
+          status: selectedService.string,
           followupdate: followUpdate.text,
           lastupdate: lastUpdate.text,
           comments: comments.text,
           industry: industry.text,
-          city: selectedCity.value,
-          source: selectedSources.value,
-          service: selectedServices.value,
+          source: selectedSource.string,
+          service: selectedService.string,
+          city: selectedCity.string,
         );
 
         if (response['success']) {

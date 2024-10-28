@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:lms/app/api/api_url.dart';
 
 import '../../../api/api_controller.dart';
-
+import '../model/updateModel.dart';
 extension ViewScreenExtension on ApiController {
-  Future<Response> updateDetails({
+  Future<UpdateDetailModel> updateDetails({
     String? status,
     String? followupdate,
     String? lastupdate,
@@ -28,17 +30,29 @@ extension ViewScreenExtension on ApiController {
       // Make the POST request
       final response = await Dio().post(apiUrl, data: formData);
 
-      // Check the response and return it
       if (response.statusCode == 200) {
-        return response; // Return the response on success
+        // If response.data is a String, decode it
+        final dynamic responseData = response.data is String
+            ? jsonDecode(response.data)
+            : response.data;
+
+        // Ensure responseData is a Map before parsing
+        if (responseData is Map<String, dynamic>) {
+          final data = UpdateDetailModel.fromJson(responseData);
+          if (data.success == true) {
+            return data; // Return the parsed model on success
+          } else {
+            throw Exception('Update failed: ${data.msg}');
+          }
+        } else {
+          throw Exception('Unexpected response format: ${response.data}');
+        }
       } else {
         throw Exception('Failed to update details: ${response.statusMessage}');
       }
-    } on DioError catch (e) {
-      throw Exception('Dio error: ${e.message}');
-    } catch (e) {
-      // Handle other exceptions
-      throw Exception('Unexpected error: $e');
+    }catch(e){
+      throw Exception('Failed to update details: ');
+
     }
   }
 }

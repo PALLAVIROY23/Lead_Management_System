@@ -1,5 +1,7 @@
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lms/app/api/api_controller.dart';
@@ -9,6 +11,9 @@ import '../../../../customWidgets/color_extension.dart';
 import '../../../routes/app_pages.dart';
 import '../../add_customer/controllers/add_customer_controller.dart';
 import '../controllers/customer_list_screen_controller.dart';
+import '../model/citiesModel.dart';
+import '../model/serviceModel.dart';
+import '../model/sourceModel.dart';
 
 class CustomerListScreenView extends GetView<CustomerListScreenController> {
   CustomerListScreenView({super.key});
@@ -45,30 +50,54 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
           ),
           actions: [
             IconButton(
-              onPressed: () {
+              onPressed: () async {
+                print("Icon button pressed");
+
+                // Show CircularProgressIndicator
+                EasyLoading.show(
+                    status: 'Loading...'); // Using FlutterEasyLoading
+
+                // Simulate data fetching or any async operation
+                await Future.delayed(Duration(
+                    seconds: 1)); // Replace with your actual async operation
+
+                // Dismiss the CircularProgressIndicator
+                EasyLoading.dismiss();
+
                 showModalBottomSheet(
                   context: context,
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   backgroundColor: Colors.white,
+                  isScrollControlled: true,
                   builder: (BuildContext context) {
-                    return CustomerFilterModal();
+                    print("Building modal bottom sheet");
+                    return DraggableScrollableSheet(
+                      expand: false,
+                      builder: (context, scrollController) {
+                        return CustomerFilterModal(
+                            scrollController: scrollController);
+                      },
+                    );
                   },
-                );
+                ).then((_) {
+                  print("Modal bottom sheet closed");
+                });
               },
               icon: const ImageIcon(
                 AssetImage("assets/images/sort.png"),
                 color: Colors.white,
                 size: 28,
               ),
-            ).paddingOnly(right: 10, bottom: 10),
+            ).paddingOnly(right: 10, bottom: 10)
           ],
           backgroundColor: HexColor.fromHex(" #FFFFFF")),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Get.toNamed(Routes.ADD_CUSTOMER,
-              arguments: controller.selectedStatus.value);
+              arguments: controller.selectStatus.value);
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         child: const Icon(
@@ -95,7 +124,8 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                 Flexible(
                   child: TextField(
                     textAlign: TextAlign.start,
-                    cursorColor: Colors.grey,
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.white, fontSize: 18.sp), // Set the text color to white
                     decoration: InputDecoration(
                       fillColor: Colors.transparent,
                       filled: true,
@@ -104,17 +134,16 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                         borderSide: BorderSide.none,
                       ),
                       hintText: ' Search here ',
-                      hintStyle:
-                          TextStyle(color: Colors.white, fontSize: 18.sp),
+                      hintStyle: TextStyle(color: Colors.white, fontSize: 18.sp),
                     ),
                     onChanged: (value) {
-                      controller
-                          .filterCustomerList(value); // Call the filter method
+                      controller.filterCustomerList(value); // Call the filter method
                     },
                   ),
                 ),
               ],
-            ),
+            )
+
           ).paddingSymmetric(horizontal: 30.w, vertical: 15.h),
           SizedBox(height: 10.h),
 
@@ -131,7 +160,7 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                   controller.customerStatusList.value.lead!.isEmpty) {
                 return Center(
                   child: Text(
-                      'No customer data found for status: ${controller.selectedStatus.value}'),
+                      'No customer data found for status: ${controller.selectStatus.value}'),
                 );
               }
 
@@ -141,6 +170,7 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                     .length, // Use the filtered list length
                 itemBuilder: (context, index) {
                   var customer = controller.filteredCustomerList[index];
+                  print("LEADID>>>>>>>>>>>>${customer.id}");
                   return Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
@@ -159,26 +189,29 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                         SizedBox(
                           height: 15.h,
                         ),
-                    Column(
-                      children: [
-                        buildCustomerRow("Name", customer.name),
-                        SizedBox(height: 7.h),
-                        buildCustomerRow("Mobile", customer.mobile),
-                        SizedBox(height: 7.h),
-                        buildCustomerRow("Address", customer.address),
-                        SizedBox(height: 7.h),
-                        buildCustomerRow("Company", customer.companyname),
-                        SizedBox(height: 7.h),
-                        buildCustomerRow("Status", customer.status), // Directly call customer.status
-                        SizedBox(height: 7.h),
-                        buildCustomerRow("Services", customer.service),
-                        SizedBox(height: 7.h),
-                        buildCustomerRow("FollowUpDate", customer.comments),
-                      ],
-                    ).paddingSymmetric(
-                      horizontal: 21.w,),
+                        Column(
+                          children: [
+                            buildCustomerRow("Name", customer.name),
+                            SizedBox(height: 7.h),
+                            buildCustomerRow("Mobile", customer.mobile),
+                            SizedBox(height: 7.h),
+                            buildCustomerRow("Address", customer.address),
+                            SizedBox(height: 7.h),
+                            buildCustomerRow("Company", customer.companyname),
+                            SizedBox(height: 7.h),
+                            buildCustomerRow(
+                                "Status",
+                                customer
+                                    .status), // Directly call customer.status
+                            SizedBox(height: 7.h),
+                            buildCustomerRow("Services", customer.service),
+                            SizedBox(height: 7.h),
+                          ],
+                        ).paddingSymmetric(
+                          horizontal: 21.w,
+                        ),
 
-                    // Buttons: Edit, View, Call
+                        // Buttons: Edit, View, Call
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -198,7 +231,7 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                                     'service': customer.service,
                                     "alternatemobile": customer.alternatemobile,
                                     "comments": customer.comments,
-                                    "Lead Id" : customer.id
+                                    "Lead Id": customer.id
                                   },
                                 );
                               },
@@ -231,12 +264,12 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                                     'status': customer.status,
                                     'service': customer.service,
                                     'followupdate': customer.followupdate,
-                                    "lastupdate" : customer.lastupdate,
-                                    "comments" : customer.comments,
-                                    "Lead Id" : customer.id,
+                                    "lastupdate": customer.lastupdate,
+                                    "comments": customer.comments,
+                                    "Lead Id": customer.id,
                                   },
                                 );
-                                                            },
+                              },
                               color: Colors.orangeAccent,
                               textcolor: Colors.white,
                               icon: Icons.remove_red_eye_outlined,
@@ -291,7 +324,9 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
                                   } else {
                                     // Notify the user of permission denial
                                     Get.snackbar('Permission Denied',
-                                        'Phone call or microphone permission denied',colorText: Colors.red,backgroundColor: Colors.white);
+                                        'Phone call or microphone permission denied',
+                                        colorText: Colors.red,
+                                        backgroundColor: Colors.white);
                                   }
                                 } else {
                                   Get.snackbar(
@@ -397,42 +432,158 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
     );
   }
 
-  Widget CustomerFilterModal() {
-    final AddCustomerController controller = Get.put(AddCustomerController(apiController: ApiController()));
+  Widget CustomerFilterModal({required ScrollController scrollController}) {
+    final CustomerListScreenController controller = Get.put(
+      CustomerListScreenController(apiController: ApiController()),
+    );
+
     return Container(
       height: 90.sh,
       padding: EdgeInsets.all(16.w),
       child: SingleChildScrollView(
+        controller: scrollController, // Pass the scroll controller here
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Service Dropdown
-            Obx(() => _buildDropdown(
-              value: controller.selectedServices.value.isNotEmpty
-                  ? controller.selectedServices.value
-                  : null,
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  controller.updateSelectedService(newValue);
-                }
-              },
-              items: controller.services.toSet(),
-            )),
+            Obx(() => Container(
+                  width: 352.w,
+                  height: 50.h,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade200,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: DropdownButton<CustomerService>(
+                      value: controller.selectedService.value,
+                      isExpanded: true,
+                      hint: const Text("Customer Services"),
+                      icon: const Icon(Icons.arrow_drop_down_sharp),
+                      onChanged: (CustomerService? newValue) {
+                        if (newValue != null) {
+                          controller.updateSelectedService(newValue);
+                        }
+                      },
+                      underline: Container(),
+                      items: controller.serviceList
+                          .map<DropdownMenuItem<CustomerService>>(
+                              (CustomerService service) {
+                        return DropdownMenuItem<CustomerService>(
+                          value: service,
+                          child: Text(service.name ?? 'Unnamed Service'),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                )),
             SizedBox(height: 20.h),
+            Obx(() => Container(
+                  width: 352.w,
+                  height: 50.h,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade200,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: DropdownButton<String>(
+                      value: controller.selectStatus.value,
+                      isExpanded: true,
+                      hint: const Text(
+                          "Customer Status "), // Display hint when no value is selected
+                      icon: const Icon(Icons.arrow_drop_down_sharp),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          controller.updateSelectedStatus(newValue);
+                        }
+                      },
+                      underline: Container(), // Removing the underline
+                      items: controller.status
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                )),
+            SizedBox(
+              height: 20.h,
+            ), // Repeating dropdown example
+            Obx(() => Container(
+                  width: 352.w,
+                  height: 50.h,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade200,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: DropdownButton<CitiesData>(
+                      value: controller.selectedCity
+                          .value, // Use selectedCity from the controller
+                      isExpanded: true,
+                      hint: const Text(
+                          "Select city "), // Display hint when no value is selected
+                      icon: const Icon(Icons.arrow_drop_down_sharp),
+                      onChanged: (CitiesData? newValue) {
+                        if (newValue != null) {
+                          controller.updateSelectedCity(newValue);
+                        }
+                      },
+                      underline: Container(), // Removing the underline
+                      items: controller.city
+                          .map<DropdownMenuItem<CitiesData>>((CitiesData city) {
+                        return DropdownMenuItem<CitiesData>(
+                          value: city, // Set the correct value
+                          child: Text(city.name ??
+                              ''), // Display the city name, handle null safety
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                )),
 
-            // Other Dropdowns (add more as needed)
-            // Repeating dropdown example
-            Obx(() => _buildDropdown(
-              value: controller.selectedServices.value.isNotEmpty
-                  ? controller.selectedServices.value
-                  : null,
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  controller.updateSelectedService(newValue);
-                }
-              },
-              items: controller.services.toSet(),
-            )),
+            SizedBox(height: 20.h),
+            Obx(() => Container(
+                  width: 352.w,
+                  height: 50.h,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade200,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: DropdownButton<SourceList>(
+                      value: controller.selectedSource.value,
+                      isExpanded: true,
+                      hint: const Text(
+                          "Customer Source"), // Display hint when no value is selected
+                      icon: const Icon(Icons.arrow_drop_down_sharp),
+                      onChanged: (SourceList? newValue) {
+                        if (newValue != null) {
+                          controller.updateSelectedSource(newValue);
+                        }
+                      },
+                      underline: Container(), // Removing the underline
+                      items: controller.sources
+                          .map<DropdownMenuItem<SourceList>>(
+                              (SourceList source) {
+                        return DropdownMenuItem<SourceList>(
+                          value: source,
+                          child: Text(source.sourcename ?? "Unknown"),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                )),
+
             SizedBox(height: 30.h),
 
             // Action Buttons
@@ -464,6 +615,8 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
           ],
         ),
       ),
+    ).paddingSymmetric(
+      vertical: 20.h,
     );
   }
 
@@ -471,6 +624,7 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
     String? value,
     required ValueChanged<String?>? onChanged,
     required Set<String> items,
+    String hintText = "Customer Service", // Add a default hint text
   }) {
     return Container(
       width: double.infinity,
@@ -487,6 +641,11 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
           icon: const Icon(Icons.arrow_drop_down_sharp),
           onChanged: onChanged,
           underline: Container(),
+          hint: Text(
+            hintText,
+            style: TextStyle(
+                color: Colors.grey), // Optional: Customize hint text style
+          ),
           items: items.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -497,8 +656,4 @@ class CustomerListScreenView extends GetView<CustomerListScreenController> {
       ),
     );
   }
-
-
 }
-
-

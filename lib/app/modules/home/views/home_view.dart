@@ -16,104 +16,68 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Lead Management System",
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
+      appBar: AppBar(
+        title: Text(
+          "Lead Management System",
+          style: TextStyle(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
           ),
-          toolbarHeight: 80.h,
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: HexColor.fromHex("#1D4288"),
-            ),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.account_circle_rounded,
-                color: Colors.white,
-                size: 35,
-              ),
-            ).paddingOnly(right: 10, bottom: 10),
-          ],
-          backgroundColor: HexColor.fromHex("#FFFFFF"),
         ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.transparent,
-        height: 110.h,
-        child: Container(
-          height: 130.h,
+        toolbarHeight: 80.h,
+        flexibleSpace: Container(
           decoration: BoxDecoration(
-            color: HexColor.fromHex("#1D4288"),
             borderRadius: BorderRadius.circular(15),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              CustomIconTextButton(
-                icon: Icons.dashboard,
-                iconColor: Colors.blue.shade100,
-                label: 'Dashboard',
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
-              CustomIconTextButton(
-                icon: Icons.analytics,
-                iconColor: Colors.blue.shade100,
-                label: 'New',
-                textColor: Colors.white,
-                onPressed: () {
-                  // Get.toNamed(Routes.NEWS);
-                },
-              ),
-              CustomIconTextButton(
-                icon: Icons.follow_the_signs,
-                iconColor: Colors.blue.shade100,
-                label: 'Follow up',
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
-              CustomIconTextButton(
-                icon: Icons.note_rounded,
-                iconColor: Colors.blue.shade100,
-                label: 'Hot Lead',
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
-            ],
+            color: HexColor.fromHex("#1D4288"),
           ),
         ),
-      ),// Your BottomAppBar code
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.account_circle_rounded,
+              color: Colors.white,
+              size: 35,
+            ),
+          ).paddingOnly(right: 10, bottom: 10),
+        ],
         backgroundColor: HexColor.fromHex("#FFFFFF"),
-    drawer: NavBar(),
-    body: SafeArea(
-    child: RefreshIndicator(
-    onRefresh: () async {
-    String uid = "uid"; // Replace with actual UID retrieval
-    await controller.refreshDashboardData(uid);
-    },
-    child: Obx(() {
-    if (controller.isLoading.value) {
-    return const Center(child: CircularProgressIndicator());
-    }
+      ),
+      backgroundColor: HexColor.fromHex("#FFFFFF"),
+      drawer: NavBar(),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            String uid = "uid"; // Replace with actual UID retrieval
+            await controller.refreshDashboardData(uid);
+          },
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-    final dashboardData = controller.dashboardData.value;
-    return remainBody(dashboardData);
-    }),
-    ),
-    ),
+            final dashboardData = controller.dashboardData.value;
+
+            return Column(
+              children: [
+                // Display the main body first
+                Expanded(child: remainBody(dashboardData)),
+                // Add your banner below the main body
+               Column(
+                 children: [
+                   Image(image: AssetImage("assets/images/banner_LMS.png")).paddingSymmetric(vertical: 30, horizontal: 30)
+                 ],
+               )
+              ],
+            );
+          }),
+        ),
+      ),
     );
+
   }
 }
-
-
-
 
 Widget remainBody(DashBoardModel? dashboardData) {
   final HomeController controller = Get.find<HomeController>();
@@ -138,7 +102,8 @@ Widget remainBody(DashBoardModel? dashboardData) {
             print(" uid value >>${uid}");
             print(" selectedStatus value >>${selectedStatus}");
             box.write('selectedStatus', lead?.status);
-            List<dynamic> data = await controller.customerListByStatus(uid, selectedStatus ?? " ");
+            List<dynamic> data = await controller.customerListByStatus(
+                uid, selectedStatus ?? " ");
             print('Fetched Data for $selectedStatus: $data');
             Get.to(() => CustomerListScreenView());
           },
@@ -166,6 +131,7 @@ Widget remainBody(DashBoardModel? dashboardData) {
                       fontSize: 13.sp,
                       fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 10.h),
                   Text(

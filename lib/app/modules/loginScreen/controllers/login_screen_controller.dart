@@ -75,7 +75,7 @@ class LoginScreenController extends GetxController {
 
     } else {
       // Error case
-      EasyLoading.showError("${response.msg}");
+      EasyLoading.showError("Invalid Input");
     }
   }
 

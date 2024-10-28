@@ -5,12 +5,15 @@ import 'package:dio/dio.dart';
 
 import '../../../api/api_controller.dart';
 import '../../../api/api_url.dart';
+import '../model/citiesModel.dart';
 import '../model/customerListModel.dart';
 import '../model/serviceModel.dart';
+import '../model/sourceModel.dart';
 
 extension NewsController on ApiController {
   // Fetch Customer Status List
-  Future<CustomerStatusListModel> fetchCustomerStatusListApi(String uid, String status) async {
+  Future<CustomerStatusListModel> fetchCustomerStatusListApi(
+      String uid, String status) async {
     try {
       var dio = Dio();
       // Show loading indicator
@@ -36,7 +39,8 @@ extension NewsController on ApiController {
 
       // Check if the status code is 200
       if (response.statusCode == 200 && response.data != null) {
-        print("Response Data for customer list>>>>>>>>: ${json.encode(response.data)}");
+        print(
+            "Response Data for customer list>>>>>>>>: ${json.encode(response.data)}");
 
         var parsedData = customerStatusListFromJson(response.data is String
             ? response.data
@@ -56,13 +60,14 @@ extension NewsController on ApiController {
           msg: "Failed to load data. Status code: ${response.statusCode}",
         );
       }
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       // Handle Dio errors
       EasyLoading.dismiss();
       print("DioError occurred: ${e.message}, Response: ${e.response}");
       return CustomerStatusListModel(
         success: false,
-        msg: "An error occurred: ${e.response?.statusCode ?? 'Unknown error'} - ${e.message}",
+        msg:
+            "An error occurred: ${e.response?.statusCode ?? 'Unknown error'} - ${e.message}",
       );
     } catch (e) {
       // Handle general errors
@@ -75,65 +80,82 @@ extension NewsController on ApiController {
     }
   }
 
-  Future<ServiceModel> fetchServiceListApi() async {
+
+// In ApiController
+
+  Future<CustomerServiceModel> fetchServiceListApi() async {
     try {
-      var dio = Dio();
-      // Show loading indicator
-      EasyLoading.show(status: "Loading");
+      Response response = await Dio().get(AppUrl.services);
 
-      // API request without any parameters
-      Response response = await dio.get(
-        AppUrl.services, // Assuming AppUrl.services contains the correct endpoint URL
-      );
-
-      // Dismiss loading
-      EasyLoading.dismiss();
-
-      // Check if the status code is 200
-      if (response.statusCode == 200 && response.data != null) {
-        print("Response Data for service list>>>>>>>>: ${json.encode(response.data)}");
-
-        // Parse the response data using the serviceModelFromJson function
-        var parsedData = serviceModelFromJson(response.data is String
-            ? response.data
-            : jsonEncode(response.data));
-
-        // Check if the services list is null or empty
-        if (parsedData.services == null || parsedData.services!.isEmpty) {
-          print("Service data is null or empty");
-        } else {
-          print("Service data length: ${parsedData.services!.length}");
-        }
-
-        // Return the parsed model if successful
-        return parsedData;
+      // Check if the response body is a JSON-encoded string
+      if (response.data is String) {
+        // Decode the JSON string
+        final Map<String, dynamic> jsonData = json.decode(response.data);
+        return CustomerServiceModel.fromJson(jsonData);
+      } else if (response.data is Map<String, dynamic>) {
+        // If it's already a Map, directly parse it
+        return CustomerServiceModel.fromJson(response.data);
       } else {
-        // If the response status is not 200, return an error model
-        print("Error: ${response.statusMessage}");
-        return ServiceModel(
-          success: false,
-          msg: "Failed to load data. Status code: ${response.statusCode}",
-        );
+        throw Exception("Unexpected response format");
       }
-    } on DioError catch (e) {
-      // Handle Dio-specific errors
-      EasyLoading.dismiss();
-      print("DioError occurred: ${e.message}, Response: ${e.response}");
-      return ServiceModel(
-        success: false,
-        msg: "An error occurred: ${e.response?.statusCode ?? 'Unknown error'} - ${e.message}",
-      );
     } catch (e) {
-      // Handle general exceptions
-      EasyLoading.dismiss();
-      print("Unexpected error occurred: ${e.toString()}");
-      return ServiceModel(
-        success: false,
-        msg: "An unexpected error occurred: ${e.toString()}",
-      );
+      // Handle any exceptions during the request
+      print("Error fetching service list: $e");
+      throw Exception("Failed to fetch service list");
     }
   }
 
+  Future<CustomerCitiesModel> fetchCitiesListApi() async {
+    try {
+      Response response = await Dio().get(AppUrl.cities);
+      if (response.data is String) {
+        print("CITY DATA>>>>>>${response.data}");
+        final Map<String, dynamic> jsonData = json.decode(response.data);
+        return CustomerCitiesModel.fromJson(jsonData);
+      } else if (response.data is Map<String, dynamic>) {
+        return CustomerCitiesModel.fromJson(response.data);
+      } else {
+        throw Exception("Unexpected response format");
+      }
+    } catch (e) {
+      print("Error fetching service list: $e");
+      throw Exception("Failed to fetch service list");
+    }
+  }
+
+
+  Future<CustomerSourceModel> fetchSourceListApi() async {
+    try {
+      // Create Dio instance
+      var dio = Dio();
+
+      // Make the request
+      Response response = await dio.request(
+        AppUrl.source,
+        options: Options(
+          method: 'GET',
+        ),
+      );
+
+      // Check response status
+      if (response.statusCode == 200) {
+        // Handle the response data
+        if (response.data is String) {
+          final Map<String, dynamic> jsonData = json.decode(response.data);
+          print("SOURCE DATA >>>>>> ${response.data}");
+          return CustomerSourceModel.fromJson(jsonData);
+        } else if (response.data is Map<String, dynamic>) {
+          return CustomerSourceModel.fromJson(response.data);
+        } else {
+          throw Exception("Unexpected response format");
+        }
+      } else {
+        // Handle non-200 responses
+        throw Exception("Failed to fetch source list: ${response.statusMessage}");
+      }
+    } catch (e) {
+      // Catch any errors during the request
+      throw Exception("Failed to fetch sources list: $e");
+    }
+  }
 }
-
-

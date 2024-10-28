@@ -67,11 +67,9 @@ class _NavBarState extends State<NavBar> {
                               onTap: () async {
                                 // Fetch the UID from storage
                                 String uid = box.read('userDetail')['uid'];
-
                                 String selectedStatus = status;
-                                print("uid value >> ${uid}");
-                                print(
-                                    "selectedStatus value >> $selectedStatus");
+                                print("uid value >> $uid");
+                                print("selectedStatus value >> $selectedStatus");
 
                                 box.write('selectedStatus', selectedStatus);
                                 List<dynamic> data = await userController
@@ -149,10 +147,11 @@ class CustomRowItem extends StatelessWidget {
   }
 }
 
+
 class UserController extends GetxController {
   GetStorage box = GetStorage();
-  var userName = ''.obs; // Observable string for username
-  var userType = ''.obs; // Observable string for user type
+  var userName = " ".obs; // Observable string for username
+  var userType = " ".obs; // Observable string for user type
 
   var dashboardData = DashBoardModel().obs;
   var statusList = <String>[].obs;
@@ -165,8 +164,26 @@ class UserController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
     fetchStatuses();
-    getDataFromStorage();// Fetch status list from the API
+
+    getDataFromStorage();
+    updateUI();
+  }
+   saveUserDataToStorage(String userFullName, String userType) {
+    box.write('userFullName', userFullName);
+    box.write('userType', userType);
+  }
+  getDataFromStorage() {
+    // Retrieve data from storage
+    var storedUserName = (Constants.userDetails[1]);
+    var storedUserType = (Constants.userDetails[2]);
+    print("USERFULLNAME>>>${Constants.userDetails[1]}");
+
+    // Update the observables
+    userName.value = storedUserName ;
+    userType.value = storedUserType ;
+
   }
 
 
@@ -185,17 +202,7 @@ class UserController extends GetxController {
     Constants.userDetails = ["uid", "userFullName", "userType"];
     Get.offAllNamed(Routes.LOGIN_SCREEN); // Navigate to the login screen
   }
-   getDataFromStorage() {
-    // Retrieve data from storage
-    var storedUserName = (Constants.userDetails[1]);
-    var storedUserType = (Constants.userDetails[2]);
-    print("USERFULLNAME>>>${Constants.userDetails[1]}");
 
-    // Update the observables
-    userName.value = storedUserName ;
-    userType.value = storedUserType ;
-
-  }
 
   void updateUI() {
     // Update the UI or perform any other actions needed

@@ -5,8 +5,13 @@ import 'package:get/get.dart';
 import 'package:lms/app/api/api_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:lms/app/modules/add_customer/extension/addCustomerExtension.dart';
+import 'package:lms/app/modules/customerListScreen/extension/customerListExtension.dart';
 import 'package:lms/app/modules/home/extension/dashboard_extension.dart';
 import 'package:lms/app/routes/app_pages.dart';
+
+import '../../customerListScreen/model/citiesModel.dart';
+import '../../customerListScreen/model/serviceModel.dart';
+import '../../customerListScreen/model/sourceModel.dart';
 
 class AddCustomerController extends GetxController {
   final ApiController apiController;
@@ -21,20 +26,25 @@ class AddCustomerController extends GetxController {
   TextEditingController companyNameController = TextEditingController();
 
   // Observable variables for dropdowns and date
-  var selectedServices = 'Website'.obs;
-  List<String> services = ['Website', 'Android App', 'AMC'];
+  var selectedService = Rx<CustomerService?>(null);
+  var serviceList = <CustomerService>[].obs;
   var selectedStatus = Rx<String?>(null);
   var status = <String>[].obs;
-  var selectedCity = "Patna".obs;
-  List<String> city = ['Patna', 'Samastipur', 'Begusarai'];
-  var selectedSources = "JustDial".obs;
-  List<String> sources = ['JustDial', 'Google', 'Website'];
+  var selectedCity = Rx<CitiesData?>(null);
+  var city = <CitiesData>[].obs;
+  var selectedSource = Rx<SourceList?>(null);
+  var sources = <SourceList>[].obs;
   var selectedDate = Rx<DateTime?>(null);
 
   @override
   void onInit() {
     super.onInit();
     fetchStatuses();
+    fetchSourceList();
+    fetchServiceList();
+    fetchCitiesList();
+
+
   }
 
   // Fetch the list of statuses from API
@@ -57,24 +67,78 @@ class AddCustomerController extends GetxController {
     }
   }
 
-  void updateSelectedItem(String? newValue) {
-    if (newValue != null) {
-      selectedServices.value = newValue;
-    }
+  void updateSelectedService(CustomerService value) {
+    selectedService.value = value;
   }
-  void updateSelectedCity(String? newValue) {
-    if (newValue != null) {
-      selectedCity.value = newValue;
-    }
-  }
-  void updateSelectedSource(String? newValue) {
-    if (newValue != null) {
-      selectedSources.value = newValue;
-    }
-  }
+  void updateSelectedCity(CitiesData value) => selectedCity.value = value;
+  void updateSelectedSource(SourceList value) => selectedSource.value = value;
+
   void updateSelectedStatus(String? newValue) {
       selectedStatus.value = newValue;
   }
+  Future<void> fetchServiceList() async {
+    EasyLoading.show(status: "Loading..."); // Show loading indicator
+    try {
+      var serviceData = await apiController.fetchServiceListApi();
+
+      if (serviceData.success == true) {
+        // Ensure that services are not null before assigning
+        serviceList.value = serviceData.services ?? [];
+        print("PRINT SERVICE LIST>>>>>>> $serviceList");
+      } else {
+        EasyLoading.showError("${serviceData.msg ?? 'Failed to load services'}");
+        print("PRINT ERROR>>>>>>>>>>>>> ${serviceData.msg}");
+      }
+    } catch (e) {
+      // Log the error for debugging purposes
+      print("Error occurred while fetching service list: $e");
+      EasyLoading.showError("An unexpected error occurred: $e");
+    } finally {
+      EasyLoading.dismiss(); // Dismiss loading indicator in both success and error cases
+    }
+  }
+  Future<void>fetchCitiesList()async{
+    EasyLoading.show(status: "Loading....");
+    try{
+      var cityData = await apiController.fetchCitiesListApi();
+      if(cityData.success==true){
+        city.value= cityData.cities ?? [];
+        print("CITIES LIST>>>>>>>${city}");
+      }else {
+        EasyLoading.showError("${cityData.msg ?? "failed to load cities list"}");
+      }
+
+    }catch(e) {
+      print("Error occurred while fetching service list: $e");
+      EasyLoading.showError("An unexpected error occurred: $e");
+    }
+  }
+  Future<void> fetchSourceList() async {
+    EasyLoading.show(status: "Loading....");
+    try {
+      // Fetch data from the API
+      var sourceData = await apiController.fetchSourceListApi();
+
+      // Check if the API call was successful
+      if (sourceData.success == true) {
+        // Update the sources observable with the fetched data
+        sources.value = sourceData.source ?? [];
+        print("SOURCELIST>>>>>>${sourceData.source}");
+
+        // Display a success message if needed
+        EasyLoading.dismiss();
+      } else {
+        // Show error message if the response was not successful
+        EasyLoading.showError(sourceData.msg ?? "Failed to fetch source list");
+      }
+    } catch (e) {
+      // Handle any errors that occur during the API call
+      EasyLoading.showError("An unexpected error occurred: $e");
+    }
+  }
+
+
+
   Future<void> selectDate(BuildContext context) async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -152,9 +216,9 @@ class AddCustomerController extends GetxController {
           lastupdate: formattedDate,
           comments: '',
           industry: '',
-          city: selectedCity.value,
-          source: selectedSources.value,
-          service: selectedServices.value,
+          city: selectedCity.string,
+          source: selectedSource.string,
+          service: selectedService.string,
         );
         print("ADD CUSTOMER>>>>>>>${response}");
         Get.toNamed(Routes.HOME);
@@ -181,12 +245,11 @@ class AddCustomerController extends GetxController {
     alternateMobileNumber.clear();
     emailController.clear();
     companyNameController.clear();
-    selectedServices.value = 'Website';
-    selectedStatus.value = 'Open';
-    selectedCity.value = 'Patna';
-    selectedSources.value = 'JustDial';
+    selectedService.value = null;
+    selectedStatus.value = null;
+    selectedCity.value = null;
+    selectedSource.value = null;
     selectedDate.value = null;
   }
 
-  void updateSelectedService(String newValue) {}
 }

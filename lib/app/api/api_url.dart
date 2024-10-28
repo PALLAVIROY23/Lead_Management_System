@@ -10,6 +10,8 @@ class AppUrl{
   static const String updateCustomer = "$apiUrl/updatecustomer.php";
   static const String updateDetails = "$apiUrl/updatedetail.php";
   static const String services = "$apiUrl/service.php";
+  static const String cities = "$apiUrl/cities.php";
+  static const String source = "$apiUrl/sources.php";
 
 
 

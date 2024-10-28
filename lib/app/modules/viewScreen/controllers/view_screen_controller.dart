@@ -13,7 +13,6 @@ import 'package:lms/app/routes/app_pages.dart';
 
 import '../../../api/api_controller.dart';
 import '../../customerListScreen/model/customerListModel.dart';
-import '../../customerListScreen/views/customer_list_screen_view.dart';
 import '../../home/model/dashboard_model.dart';
 
 class ViewScreenController extends GetxController {
@@ -107,21 +106,29 @@ class ViewScreenController extends GetxController {
   void updateSelectStatus(String value) {
     selectedStatus.value = value;
   }
-/*  void onSubmitDetails() async {
+
+
+
+  Future<void> onSubmitDetails() async {
+    String uid = box.read('userDetail')['uid']; // Get the user ID from storage
     try {
       // Retrieve the current selected status
       String? currentStatus = selectedStatus.value;
+      String newComment = comment.value;
+      String followUpDate = formattedDate;
+
       if (currentStatus == null || currentStatus.isEmpty) {
         EasyLoading.showError("Please select a status first");
         return;
       }
 
-      // Extract data from the arguments
-      String? leadId = args["id"];
-      String? followUpDate = args["followupdate"];
-      String? lastUpdate = args["lastupdate"];
-      String? oldComments = args["comments"];
-      String? newComments = comment.value; // Get the updated comment from the controller
+      if (newComment.isEmpty) {
+        EasyLoading.showError("Please provide a comment");
+        return;
+      }
+
+      // Extract the lead ID from the arguments
+      String? leadId = args["Lead Id"];
 
       if (leadId == null) {
         EasyLoading.showError("Lead ID is missing");
@@ -136,13 +143,11 @@ class ViewScreenController extends GetxController {
         id: leadId,
         status: currentStatus,
         followupdate: followUpDate,
-        lastupdate: lastUpdate,
-        oldcomments: oldComments,
-        comments: newComments,
+        comments: newComment,
       );
 
       // Check the response status
-      if (response.statusCode == 200) {
+      if (response.success == true) {
         // Update the local customerData list
         int existingIndex = customerData.indexWhere((lead) => lead.id == leadId);
         if (existingIndex != -1) {
@@ -156,9 +161,9 @@ class ViewScreenController extends GetxController {
             service: args["service"],
             source: args["source"],
             companyname: args["companyname"],
-            lastupdate: lastUpdate,
+            lastupdate: DateTime.now().toString(), // Update the last update time
             followupdate: followUpDate,
-            comments: newComments,
+            comments: newComment,
           );
         }
 
@@ -168,81 +173,19 @@ class ViewScreenController extends GetxController {
           customerData.where((lead) => lead.status == currentStatus),
         );
 
-        // Show a success message
-        EasyLoading.showSuccess("Data has been moved to $currentStatus status");
-        Get.toNamed(Routes.HOME);
+        // Show a success message and navigate to the customer list screen
+        EasyLoading.showSuccess("Details updated successfully");
+        Get.toNamed(Routes.CUSTOMER_LIST_SCREEN);
       } else {
         // Show error if the API response is not successful
-        EasyLoading.showError("Failed to update details: ${response.statusMessage}");
+        EasyLoading.showError("Failed to update details: ${response.msg}");
       }
     } catch (e) {
-      print("Error while updating details: $e");
+      log("Error while updating details: $e");
       EasyLoading.showError("Error updating details: $e");
     }
-  }*/
-
-
-
-  Future<void> onSubmitDetails() async {
-    String uid = box.read('userDetail')['uid'];
-    try {
-      // Retrieve the current selected status
-      String? currentStatus = selectedStatus.value;
-
-      if (currentStatus == null || currentStatus.isEmpty) {
-        EasyLoading.showError("Please select a status first");
-        return;
-      }
-
-      // Extract data from the arguments and create a new LeadData object
-      LeadData newLeadData = LeadData(
-        name: args["name"],
-        mobile: args["mobile"],
-        city: args["address"],
-        status: currentStatus, // Assign the selected status
-        service: args["service"],
-        source: args["source"],
-        companyname: args["companyname"],
-        lastupdate: args["lastupdate"],
-        followupdate: args["followupdate"],
-        comments: args["12"],
-        id: args["id"],
-      );
-
-      // Check if the new lead is already in the customerData list based on the ID
-      bool isExisting = customerData.any((lead) => lead.id == newLeadData.id);
-
-      if (isExisting) {
-        // Update the existing lead data in the list
-        int index = customerData.indexWhere((lead) => lead.id == newLeadData.id);
-        customerData[index] = newLeadData;
-      } else {
-        // Add the new LeadData to the customerData list
-        customerData.add(newLeadData);
-      }
-
-      // Update the selectedStatusList with only the data that matches the provided ID and current status
-      selectedStatusList.clear();
-      selectedStatusList.addAll(
-        customerData.where((lead) => lead.id == newLeadData.id && lead.status == currentStatus),
-      );
-
-      // Show a success message
-      EasyLoading.showSuccess("Data has been moved to $currentStatus status");
-      Get.toNamed(Routes.CUSTOMER_LIST_SCREEN);
-   /*   print('Fetched Data for $selectedStatus: $uid');
-      Get.to(() => CustomerListScreenView(), arguments: {
-        'uid': uid,
-        'status': currentStatus,
-      });*/
-
-
-
-    } catch (e) {
-      print("Error while moving data to selected status: $e");
-      EasyLoading.showError("Error moving data: $e");
-    }
   }
+
 
 
 

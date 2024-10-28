@@ -1,27 +1,25 @@
-// To parse this JSON data, do
-//
-//     final serviceModel = serviceModelFromJson(jsonString);
+
 
 import 'dart:convert';
 
-ServiceModel serviceModelFromJson(String str) => ServiceModel.fromJson(json.decode(str));
+CustomerServiceModel serviceModelFromJson(String str) => CustomerServiceModel.fromJson(json.decode(str));
 
-String serviceModelToJson(ServiceModel data) => json.encode(data.toJson());
+String serviceModelToJson(CustomerServiceModel data) => json.encode(data.toJson());
 
-class ServiceModel {
+class CustomerServiceModel {
   bool? success;
-  List<Service>? services;
+  List<CustomerService >? services;
   String? msg;
 
-  ServiceModel({
+  CustomerServiceModel({
     this.success,
     this.services,
     this.msg,
   });
 
-  factory ServiceModel.fromJson(Map<String, dynamic> json) => ServiceModel(
+  factory CustomerServiceModel.fromJson(Map<String, dynamic> json) => CustomerServiceModel(
     success: json["success"],
-    services: json["services"] == null ? [] : List<Service>.from(json["services"]!.map((x) => Service.fromJson(x))),
+    services: json["services"] == null ? [] : List<CustomerService >.from(json["services"]!.map((x) => CustomerService .fromJson(x))),
     msg: json["msg"],
   );
 
@@ -32,16 +30,16 @@ class ServiceModel {
   };
 }
 
-class Service {
+class CustomerService  {
   String? id;
   String? name;
 
-  Service({
+  CustomerService ({
     this.id,
     this.name,
   });
 
-  factory Service.fromJson(Map<String, dynamic> json) => Service(
+  factory CustomerService .fromJson(Map<String, dynamic> json) => CustomerService (
     id: json["id"],
     name: json["name"],
   );
